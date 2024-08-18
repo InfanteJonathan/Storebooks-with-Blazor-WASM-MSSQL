@@ -1,0 +1,111 @@
+﻿
+@inject LibroService _service
+
+
+<div>
+    <EditForm Model="@libro" OnValidSubmit="() => Registrar()">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="row g-3 align-items-center">
+            <div class="col-auto">
+                <label class="col-form-label">Título</label>
+            </div>
+            <div class="col-auto">
+                <InputText id="inputTitulo" @bind-Value="libro.Titulo" class="form-control" />
+            </div>
+        </div>
+        <div class="row g-3 align-items-center">
+            <div class="col-auto">
+                <label class="col-form-label">Autor</label>
+            </div>
+            <div class="col-auto">
+                <InputText id="inputAutor" @bind-Value="libro.Autor" class="form-control" />
+            </div>
+        </div>
+        <div class="row g-3 align-items-center">
+            <div class="col-auto">
+                <label class="col-form-label">Precio</label>
+            </div>
+            <div class="col-auto">
+                <InputNumber id="inputPrecio" @bind-Value="libro.Precio" class="form-control" />
+            </div>
+        </div>
+        <div class="row g-3 align-items-center">
+            <div class="col-auto">
+                <label class="col-form-label">Cantidad</label>
+            </div>
+            <div class="col-auto">
+                <InputNumber id="inputCantidad" @bind-Value="libro.Cantidad" class="form-control" />
+            </div>
+        </div>
+        <div class="row g-3 align-items-center">
+            <div class="col-auto">
+                <label class="col-form-label">Categoría</label>
+            </div>
+            <div class="col-auto">
+                <InputSelect id="inputCategoria" @bind-Value="libro.Categoria" class="form-select">
+                    <option value="">Selecciona</option>
+                    @foreach (var item in categorias)
+                    {
+                        <option value="@item.NombreCategoria">@item.NombreCategoria</option>
+                    }
+                </InputSelect>
+            </div>
+        </div>
+        <div class="row g-3 align-items-center">
+            <div class="col-auto">
+                <label class="col-form-label">Fecha de Publicación</label>
+            </div>
+            <div class="col-auto">
+                <InputDate id="inputFechaPublicacion" @bind-Value="libro.FechaPublicacion" class="form-control" aria-describedby="fechaHelpInline" />
+            </div>
+        </div>
+        <div class="row g-3 align-items-center">
+            <div class="col-auto">
+                <label class="col-form-label">Imagen URL</label>
+            </div>
+            <div class="col-auto">
+                <InputText id="inputImagen" @bind-Value="libro.Imagen" class="form-control" aria-describedby="imagenHelpInline" />
+            </div>
+        </div>
+        <div>
+            <button type="submit" class="btn btn-primary">Registrar</button>
+        </div>
+    </EditForm>
+</div>
+
+
+
+
+
+@code {
+    List<CategoriaViewModel> categorias = new List<CategoriaViewModel>();
+    LibroViewModel libro = new LibroViewModel();
+    private string message;
+    private bool exito;
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await CargarCategorias();
+    }
+
+    async Task CargarCategorias()
+    {
+        categorias = await http.GetFromJsonAsync<List<CategoriaViewModel>>("api/categorias");
+
+    }
+
+
+    async Task Registrar()
+    {
+        var response = await _service.Crear(libro);
+        exito = response.Exito;
+        message = response.Mensaje;
+        _navigate.NavigateTo("/libros");
+
+    }
+
+
+}

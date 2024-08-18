@@ -1,0 +1,84 @@
+﻿@page "/detalle/{id:int}"
+
+@inject HttpClient http
+@inject NavigationManager _navigate
+@inject LibroService _service
+
+<h3>Detalles de Libro</h3>
+
+<form style="display:flex;">
+    <div>
+        <div class="row g-3 align-items-center">
+            <div class="col-auto">
+                <img src="@libro.Imagen" alt="Imagen" />
+            </div>
+        </div>
+    </div>
+    <div>
+        <div class="row g-3 align-items-center">
+            <div class="col-auto">
+                <label class="col-form-label">Titulo: </label>
+            </div>
+            <div class="col-auto">
+                <label class="col-form-label">@libro.Titulo</label>
+            </div>
+        </div>
+        <div class="row g-3 align-items-center">
+            <div class="col-auto">
+                <label class="col-form-label">Autor: </label>
+            </div>
+            <div class="col-auto">
+                <label class="col-form-label">@libro.Autor</label>
+            </div>
+        </div>
+        <div class="row g-3 align-items-center">
+            <div class="col-auto">
+                <label class="col-form-label">Precio: </label>
+            </div>
+            <div class="col-auto">
+                <label class="col-form-label">@libro.Precio</label>
+            </div>
+        </div>
+        <div class="row g-3 align-items-center">
+            <div class="col-auto">
+                <label class="col-form-label">Categoria: </label>
+            </div>
+            <div class="col-auto">
+                <label class="col-form-label">@libro.Categoria</label>
+            </div>
+        </div>
+        <div class="row g-3 align-items-center">
+            <div class="col-auto">
+                <label class="col-form-label">Fecha de Publicación: </label>
+            </div>
+            <div class="col-auto">
+                <label class="col-form-label">@libro.FechaPublicacion</label>
+            </div>
+        </div>
+        <div class="row g-3 align-items-center">
+            <div class="col-auto">
+                <button type="button" class="btn btn-primary" @onclick=' () => _navigate.NavigateTo($"/editar/{id}")'>Editar</button>
+            </div>
+            <div class="col-auto">
+                <button type="button" class="btn btn-primary" @onclick=' () => _navigate.NavigateTo("/")'>Regresar</button>
+            </div>
+        </div>
+    </div>
+</form>
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+    LibroViewModel libro = new LibroViewModel();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ObtenerLibro();
+    }
+
+    async Task ObtenerLibro()
+    {
+        libro = await _service.obtenerLibro(id);
+    }
+
+}

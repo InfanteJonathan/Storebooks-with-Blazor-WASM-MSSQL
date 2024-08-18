@@ -1,0 +1,105 @@
+﻿@implements IDisposable
+
+@inject NavigationManager NavigationManager
+
+<div class="main container">
+    <nav class="navbar navbar-expand-md navbar-dark bg-gray mb-4">
+        <div class="container-fluid">
+            <a class="navbar-brand" style="color:black" href="">Books Store</a>
+            <button class="navbar-toggler @NavButtonCssClass" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
+                    aria-controls="navbarCollapse" aria-label="Toggle navigation" @onclick="ToggleNavMenu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse @NavBarCssClass" id="navbarCollapse" @onclick="ToggleNavMenu">
+                <ul class="navbar-nav me-auto mb-2 mb-md-0">
+                    <li class="nav-item">
+                        <NavLink class="nav-link subt" style="color:black" href="/">
+                            <span class="oi oi-home" aria-hidden="true"></span> Home
+                        </NavLink>
+                    </li>
+                    <li class="nav-item">
+                        <NavLink class="nav-link subt" style="color:black" href="libros">
+                            <span class="oi oi-list-rich" aria-hidden="true"></span> Libros
+                        </NavLink>
+                    </li>
+                    <li class="nav-item" style="justify-content: flex-end;">
+                        <form class="d-flex" onsubmit="event.preventDefault();">
+                            <input class="form-control me-2 my-custom-search-input" type="search" @bind="texto" placeholder="Busca por Título | Categoría | Autor" aria-label="Search">
+                            <button class="btn btn-outline-success" @onclick="OnSearchClicked">Buscar</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+            <AuthorizeView>
+                <Authorized>
+                    <div class="">
+                        <NavLink class="nav-link" href="Account/Manage">
+                            <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> Hola @context.User.Identity?.Name !
+                        </NavLink>
+                    </div>
+                    <div class="">
+                        <form action="Account/Logout" method="post">
+                            <AntiforgeryToken />
+                            <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+                            <button type="submit" class="btn btn-danger">
+                                <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Logout
+                            </button>
+                        </form>
+                    </div>
+                </Authorized>
+                <NotAuthorized>
+                    <div class="">
+                        <NavLink class="btn btn-success" href="Account/Register">
+                            <span class="bi bi-person-nav-menu" aria-hidden="true"></span> Register
+                        </NavLink>
+                    </div>
+                    <div class="">
+                        <NavLink class="btn btn-primary" href="Account/Login">
+                            <span  class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Login
+                        </NavLink>
+                    </div>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+    </nav>
+</div>
+
+@code {
+    private string? currentUrl;
+    private bool collapseNavMenu = true;
+    private string? NavBarCssClass => collapseNavMenu ? null : "show";
+    private string? NavButtonCssClass => collapseNavMenu ? "collapsed" : null;
+    string texto = "";
+
+    protected override void OnInitialized()
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+
+    private void OnSearchClicked()
+    {
+        if (!string.IsNullOrWhiteSpace(texto))
+        {
+            string encodedTexto = Uri.EscapeDataString(texto);
+            NavigationManager.NavigateTo($"/buscar/{encodedTexto}");
+            texto = "";
+        }
+    }
+}
+

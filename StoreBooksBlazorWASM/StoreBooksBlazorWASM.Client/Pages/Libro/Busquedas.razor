@@ -1,0 +1,65 @@
+﻿@page "/buscar/{texto}"
+@inject LibroService _service
+
+<h3>Busqueda: @cantidad referencias encontradas</h3>
+
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <Notification Message="@errorMessage" IsSuccess="false" />
+}
+
+@if (libros == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <Notification/>
+    <div class="image-container">
+        @foreach (var item in libros)
+        {
+            <div>
+                <div class="image-item">
+                    <img @onclick='() => _navigate.NavigateTo($"/detalle/{item.IdLibro}")' style="cursor:default" src=@item.Imagen alt="Imagen" />
+                </div>
+                <div>Precio: @item.Precio</div>
+            </div>
+
+        }
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string texto { get; set; }
+
+    List<LibroViewModel> libros = new();
+    int cantidad = 0;
+    string errorMessage;
+    bool exito;
+
+    // protected override async Task OnInitializedAsync()
+    // {
+    //     await BuscarLibros();
+    // }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await BuscarLibros();
+        cantidadFiltros();
+    }
+
+    private async Task BuscarLibros()
+    {
+        libros = await _service.Buscar(texto);
+    }
+
+    private void cantidadFiltros()
+    {
+        cantidad = libros
+        .ToList()
+        .Count();
+    }
+
+}

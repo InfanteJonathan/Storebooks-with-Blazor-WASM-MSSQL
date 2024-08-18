@@ -1,0 +1,127 @@
+﻿@page "/libros"
+@inject LibroService _service
+@using System.Threading.Tasks
+
+<PageTitle>Lista</PageTitle>
+
+<Notification Message="@message" IsSuccess="@exito" />
+<br />
+<h3>Catalogo de Libros</h3>
+<button @onclick="ShowModal">Nuevo Libro</button>
+<br />
+@* <button class="btn btn-primary" @onclick=Crear>Agregar</button> *@
+@* <button type="button" class="btn btn-primary" @onclick="Crear" data-bs-toggle="modal" data-bs-target="#exampleModal">Nuevo Libro</button> *@
+
+
+<br />
+@if (libros == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <br />
+    <div class="contain">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Titulo</th>
+                    <th>Autor</th>
+                    <th>Precio</th>
+                    <th>Categoria</th>
+                    <th>Fecha Publicacion</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var forecast in libros)
+                {
+                    <tr>
+                        <td>@forecast.Titulo </td>
+                        <td>@forecast.Autor</td>
+                        <td>@forecast.Precio</td>
+                        <td>@forecast.Categoria</td>
+                        <td>@forecast.FechaPublicacion</td>
+                        <td>
+                            <button class="btn btn-success" @onclick="() => Editar(forecast.IdLibro)">Editar</button>
+                            <button class="btn btn-secondary" @onclick="() => Detalles(forecast.IdLibro)">Detalles</button>
+                            <button class="btn btn-danger" @onclick="() => Eliminar(forecast.IdLibro)">Eliminar</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+
+@code {
+    [CascadingParameter] public IModalService Modal { get; set; } = default!;
+    List<LibroViewModel> libros = new();
+    string message = string.Empty;
+    bool exito = false;
+    bool modalStatus = false;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarLibros();
+
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(exito)
+        {
+            await Task.Delay(2000);
+            await CargarLibros();
+        }
+    }
+
+    async Task CargarLibros()
+    {
+        libros = await _service.ListaLibros();
+    }
+
+    private async Task ShowModal()
+    {
+        var agregarModal = Modal.Show<Crear>("Libro Nuevo");
+        var result = await agregarModal.Result;
+
+        if (result.Cancelled)
+        {
+            modalStatus = true;
+
+            if (modalStatus)
+            {
+                await CargarLibros();
+            }
+
+        }
+        else if(result.Confirmed){
+            Console.WriteLine("Modal cerrado");
+
+        }
+
+    }
+
+
+
+    async Task Editar(int id)
+    {
+        _navigate.NavigateTo($"/editar/{id}");
+    }
+
+    async Task Detalles(int id)
+    {
+        _navigate.NavigateTo($"/detalle/{id}");
+    }
+    async Task Eliminar(int id)
+    {
+        var response = await _service.Eliminar(id);
+        exito = response.Exito;
+        message = response.Mensaje;
+        await CargarLibros();
+    }
+
+}

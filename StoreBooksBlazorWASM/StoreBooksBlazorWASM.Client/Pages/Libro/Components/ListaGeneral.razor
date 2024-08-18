@@ -1,0 +1,38 @@
+﻿@inject LibroService _service
+
+<h1>Últimos Libros Agregados</h1>
+
+@if (libros == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="image-container">
+        @foreach (var item in libros)
+        {
+            <div>
+                <div class="image-item">
+                    <img @onclick='() => _navigate.NavigateTo($"/detalle/{item.IdLibro}")' style="cursor:default" src="@item.Imagen" alt="Imagen" />
+                </div>
+                <div>Precio: @item.Titulo</div>
+                <div>Precio: @item.Precio</div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    List<LibroViewModel>  libros = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarLibro();
+
+    }
+
+    async Task CargarLibro()
+    {
+        libros = await _service.ListaLibros();
+    }
+}

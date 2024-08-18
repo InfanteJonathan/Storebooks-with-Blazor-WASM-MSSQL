@@ -1,0 +1,20 @@
+﻿/* En tu archivo CSS, por ejemplo, wwwroot/css/app.css */
+
+.notification {
+    position: fixed;
+    top: 1rem; /* Ajusta según sea necesario */
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 1rem;
+    background-color: #f8d7da; /* Color de fondo para mensajes de error */
+    color: #721c24; /* Color del texto para mensajes de error */
+    border: 1px solid #f5c6cb; /* Borde para mensajes de error */
+    border-radius: 0.25rem;
+    z-index: 1050; /* Asegúrate de que el mensaje esté por encima de otros elementos */
+}
+
+.notification.success {
+    background-color: #d4edda; /* Color de fondo para mensajes de éxito */
+    color: #155724; /* Color del texto para mensajes de éxito */
+    border: 1px solid #c3e6cb; /* Borde para mensajes de éxito */
+}

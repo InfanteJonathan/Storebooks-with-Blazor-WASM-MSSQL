@@ -1,0 +1,106 @@
+﻿@page "/editar/{id:int}"
+
+@inject HttpClient http
+@inject NavigationManager _navigate
+@inject LibroService _service
+
+<h3>Editar</h3>
+
+<form>
+    <div class="row g-3 align-items-center">
+        <div class="col-auto">
+            <label class="col-form-label">Titulo</label>
+        </div>
+        <div class="col-auto">
+            <input type="text" id="inputPassword6" @bind=libro.Titulo class="form-control" aria-describedby="passwordHelpInline">
+        </div>
+    </div>
+    <div class="row g-3 align-items-center">
+        <div class="col-auto">
+            <label class="col-form-label">Autor</label>
+        </div>
+        <div class="col-auto">
+            <input type="text" id="inputPassword6" @bind=libro.Autor class="form-control" aria-describedby="passwordHelpInline">
+        </div>
+    </div>
+    <div class="row g-3 align-items-center">
+        <div class="col-auto">
+            <label class="col-form-label">Precio</label>
+        </div>
+        <div class="col-auto">
+            <input type="number" id="inputPassword6" @bind=libro.Precio class="form-control" aria-describedby="passwordHelpInline">
+        </div>
+    </div>
+    <div class="row g-3 align-items-center">
+        <div class="col-auto">
+            <label class="col-form-label">Categoria</label>
+        </div>
+        <div class="col-auto">
+            <select class="form-select" @bind=libro.Categoria aria-label="Default select example">
+                <option selected>Selecciona</option>
+                @foreach (var item in categorias)
+                {
+                    <option value="@item.NombreCategoria">@item.NombreCategoria</option>
+                }
+            </select>
+        </div>
+    </div>
+    <div class="row g-3 align-items-center">
+        <div class="col-auto">
+            <label class="col-form-label">Fecha de Publicación</label>
+        </div>
+        <div class="col-auto">
+            <input type="date" id="inputPassword6" @bind=libro.FechaPublicacion class="form-control" aria-describedby="passwordHelpInline">
+        </div>
+    </div>
+    <div class="row g-3 align-items-center">
+        <div class="col-auto">
+            <label class="col-form-label">Imagen URL</label>
+        </div>
+        <div class="col-auto">
+            <input type="text" @bind=libro.Imagen class="form-control" aria-describedby="passwordHelpInline">
+        </div>
+    </div>
+    <div class="row g-3 align-items-center">
+        <div class="col-auto">
+            <label class="col-form-label">Activo</label>
+        </div>
+        <div class="col-auto">
+            <input type="checkbox"  @bind=libro.activo class="checkbox">
+        </div>
+    </div>
+    <div>
+        <button type="button" class="btn btn-primary" @onclick="async () => await EditarLibro()">Registrar</button>
+    </div>
+</form>
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+    List<CategoriaViewModel> categorias = new List<CategoriaViewModel>();
+    LibroViewModel libro = new LibroViewModel();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ObtenerLibro();
+        await ListaCategorias();
+    }
+
+    async Task ObtenerLibro()
+    {
+        libro = await _service.obtenerLibro(id);
+    }
+
+    async Task ListaCategorias()
+    {
+        categorias = await http.GetFromJsonAsync<List<CategoriaViewModel>>($"api/categorias");
+    }
+
+    async Task EditarLibro()
+    {
+
+        var response = await _service.Editar(id, libro);
+        _navigate.NavigateTo("/libros");
+    }
+}
