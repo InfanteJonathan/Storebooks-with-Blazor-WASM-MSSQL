@@ -1,6 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using SoreBooksBlazorWASM.Service;
+using StoreBooksBlazorWASM.Data;
 using StoreBooksBlazorWASM.Data.ViewModels;
 
 namespace StoreBooksBlazorWASM.Controllers
@@ -16,13 +19,14 @@ namespace StoreBooksBlazorWASM.Controllers
             _managerV1 = managerV1;
         }
 
+
         [HttpGet]
-        [Route("detalles")]
-        public async Task<ActionResult<List<VentaGeneral>>> DetalleGeneral()
+        [Route("detalles/{id}")]
+        public async Task<ActionResult<List<VentaGeneral>>> DetalleGeneral(string id)
         {
             try
             {
-                var response = await _managerV1.DetalleGeneralVenta();
+                var response = await _managerV1.DetalleGeneralVenta(id);
                 return Ok(response);
             }
             catch (Exception ex)
@@ -31,18 +35,14 @@ namespace StoreBooksBlazorWASM.Controllers
             }
         }
 
-        [HttpPost]
-        [Route("agregarDetalle")]
-        public async Task<ActionResult> CrearDetalleVenta([FromBody]LibroViewModel model)
+        [HttpGet]
+        [Route("obtenerVenta/{userid}")]
+        public async Task<ActionResult<VentaViewModel>> ObtenerVenta(string userid)
         {
             try
             {
-                if (ModelState.IsValid)
-                {
-                    await _managerV1.AgregarCarrito(model);
-                    return Ok("Producto Agregado!");
-                }
-                return BadRequest("Error al agregar el producto");
+                var response = await _managerV1.ObtenerVenta(userid);
+                return Ok(response);    
             }
             catch (Exception ex)
             {
@@ -50,8 +50,26 @@ namespace StoreBooksBlazorWASM.Controllers
             }
         }
 
+
+        [HttpPost]
+        [Route("agregarDetalle/{id}")]
+        public async Task<ActionResult> CrearDetalleVenta([FromBody]LibroViewModel model,string id)
+        {
+            try
+            {
+                await _managerV1.AgregarCarrito(model, id);
+                return Ok("Producto Agregado!");
+                
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+
         [HttpDelete]
-        [Route("eliminarDetalle")]
+        [Route("eliminarDetalle/{id}")]
         public async Task<ActionResult> EliminarDetalle(int id)
         {
             try
@@ -65,13 +83,14 @@ namespace StoreBooksBlazorWASM.Controllers
             }
         }
 
+
         [HttpPost]
-        [Route("completarVenta")]
-        public async Task<ActionResult> CompletarVenta(VentaViewModel model)
+        [Route("completarVenta/{userid}")]
+        public async Task<ActionResult> CompletarVenta(VentaViewModel model, string userid)
         {
             try
             {
-                await _managerV1.CompletarVenta(model);
+                await _managerV1.CompletarVenta(model, userid);
                 return Ok("Venta realizada con éxito!");
             }
             catch(Exception ex)

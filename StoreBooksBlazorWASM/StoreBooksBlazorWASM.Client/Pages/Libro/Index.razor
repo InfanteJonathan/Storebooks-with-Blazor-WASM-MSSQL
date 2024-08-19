@@ -29,6 +29,7 @@ else
                     <th>Autor</th>
                     <th>Precio</th>
                     <th>Categoria</th>
+                    <th>Cantidad</th>
                     <th>Fecha Publicacion</th>
                     <th>Acciones</th>
                 </tr>
@@ -41,6 +42,7 @@ else
                         <td>@forecast.Autor</td>
                         <td>@forecast.Precio</td>
                         <td>@forecast.Categoria</td>
+                        <td>@forecast.Cantidad</td>
                         <td>@forecast.FechaPublicacion</td>
                         <td>
                             <button class="btn btn-success" @onclick="() => Editar(forecast.IdLibro)">Editar</button>
@@ -69,13 +71,10 @@ else
 
     }
 
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if(exito)
-        {
-            await Task.Delay(2000);
             await CargarLibros();
-        }
     }
 
     async Task CargarLibros()

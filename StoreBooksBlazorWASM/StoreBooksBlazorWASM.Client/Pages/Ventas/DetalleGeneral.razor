@@ -1,0 +1,152 @@
+﻿@page "/detalleVentas/{userid}"
+
+@inject VentasService _service
+@inject LibroService _serviceL
+@inject AuthenticationStateProvider _authenticationStateProvider
+
+<h3>Detalle Venta</h3>
+
+
+<div style="display:flex; justify-content:space-between">
+    <div>
+        @if(!lista.Any())
+        {
+            <p>@message</p>
+        }
+        else
+        {
+            <div>
+                @foreach (var item in lista)
+                {
+                    <div class="container" style="display:flex;margin-bottom:15px;font-weight:bold">
+                        <div class="row" style="width:70%" >
+                            <label class="">Producto: @item.Titulo </label>
+                            <label class="">Cantidad: @item.Cantidad </label>
+                            <label class="">Precio/Unidad: @item.PrecioUnitario </label>
+                            <label class="">Total Producto: @item.TotalVenta </label>
+                        </div>
+                        <div class="row" style="width:25%;justify-content:flex-start;">
+                            <img style="height:90px;width:90px" src="@item.ImgLibro" />
+                        </div>
+                        <div class="row" style="width:5%">
+                            <button class="btn btn-secondary" @onclick="() =>Agregar(item.IdLibro)">+</button>
+                            <button class="btn btn-danger" @onclick="() => Eliminar(item.IdDetalleVentas)">-</button>
+                        </div>
+                    </div>
+                }
+                <div>
+                    <a>Pago Total: @venta.Total</a>
+                </div>
+            </div>
+        }
+
+    </div>
+    <div>
+        <form @onsubmit="() => CompletarVenta()">
+            <div class="row g-3 align-items-center">
+                <div class="col-auto">
+                    <label class="col-form-label">Metodo de Pago</label>
+                </div>
+                <div class="col-auto">
+                    <select id="inputCategoria" @bind="venta.MetodoPago" class="form-select">
+                        <option value="">Selecciona</option>
+                        <option value="Credito">Crédito</option>
+                        <option value="Paypal">Paypal</option>
+                        <option value="Visa">Visa</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row g-3 align-items-center">
+                <div class="col-auto">
+                    <label class="col-form-label">Direccion de Envío</label>
+                </div>
+                <div class="col-auto">
+                    <input id="inputFechaPublicacion" @bind="venta.DireccionEnvio" class="form-control" aria-describedby="fechaHelpInline" />
+                </div>
+            </div>
+            <div>
+                <button type="submit" class="btn btn-primary">Comprar</button>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string userid { get; set;}
+    VentaViewModel venta = new VentaViewModel();
+    string message = string.Empty;
+    bool exito = false;
+    List<VentaGeneral> lista = new List<VentaGeneral>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LlamarDetalles();
+        await ObtenerVenta();
+    }
+
+
+    private async Task CompletarVenta()
+    {
+        try
+        {
+            var response = await _service.CompletarVenta(venta, userid);
+            message = response.Mensaje;
+            exito = response.Exito;
+
+            lista = new List<VentaGeneral>();
+            venta = new VentaViewModel();
+
+            await LlamarDetalles();
+            await ObtenerVenta();
+
+            
+        }
+        catch
+        {
+            lista = new List<VentaGeneral>();
+            venta = new VentaViewModel();
+        }
+    }
+
+    async Task ObtenerVenta()
+    {
+        venta = await _service.ObtenerVenta(userid);
+    }
+
+
+    async Task LlamarDetalles()
+    {
+        try
+        {
+            lista = await _service.detalleGeneral(userid);
+        }
+        catch
+        {
+            lista = new List<VentaGeneral>();
+            message = "Actualmente, no hay productos Agregados";
+        }
+    }
+
+    async Task Agregar(int id)
+    {
+        var buscarLibro = await _serviceL.obtenerLibro(id);
+        await _service.CrearDetalleVenta(buscarLibro, userid);
+
+
+        await LlamarDetalles();
+        await ObtenerVenta();
+    }
+    async Task Eliminar(int id)
+    {
+        var response = await _service.EliminarDetalleVenta(id);
+        message = response.Mensaje;
+        exito = response.Exito;
+
+
+        await LlamarDetalles();
+        await ObtenerVenta();
+
+    }
+}

@@ -1,0 +1,54 @@
+﻿@* @inject VentasService _service
+
+<h3>DetalleProducto</h3>
+
+
+<div>
+    <EditForm Model="@venta" OnValidSubmit="() => CompletarVenta()">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        
+        <div class="row g-3 align-items-center">
+            <div class="col-auto">
+                <label class="col-form-label">Metodo de Pago</label>
+            </div>
+            <div class="col-auto">
+                <InputSelect id="inputCategoria" @bind-Value="venta.MetodoPago" class="form-select">
+                    <option value="">Selecciona</option>
+                    <option value="">Crédito</option>
+                    <option value="">Paypal</option>
+                    <option value="">Visa</option>
+
+                </InputSelect>
+            </div>
+        </div>
+        <div class="row g-3 align-items-center">
+            <div class="col-auto">
+                <label class="col-form-label">Direccion de Envío</label>
+            </div>
+            <div class="col-auto">
+                <InputDate id="inputFechaPublicacion" @bind-Value="venta.DireccionEnvio" class="form-control" aria-describedby="fechaHelpInline" />
+            </div>
+        </div>
+        <div>
+            <button type="submit" class="btn btn-primary">Comprar</button>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+
+    VentaViewModel venta = new();
+    string message = string.Empty;
+    bool exito = false;
+
+
+    private async Task CompletarVenta()
+    {
+        var response = await _service.CompletarVenta(venta);
+        message = response.Mensaje;
+        exito = response.Exito;
+    }
+
+}
+ *@

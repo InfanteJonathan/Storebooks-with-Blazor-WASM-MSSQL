@@ -1,6 +1,17 @@
 ﻿@inject LibroService _service
+@inject VentasService _serviceL
+@inject AuthenticationStateProvider _authenticationStateProvider
 
 <h1>Últimos Libros Agregados</h1>
+
+
+
+@* <button @onclick="ShowToast">Show Toast</button> *@
+
+@if (toastMessage != null)
+{
+    <Toast Message="@toastMessage" Show="@showToast" Exito="@Exito"></Toast>
+}
 
 @if (libros == null)
 {
@@ -13,17 +24,25 @@ else
         {
             <div>
                 <div class="image-item">
-                    <img @onclick='() => _navigate.NavigateTo($"/detalle/{item.IdLibro}")' style="cursor:default" src="@item.Imagen" alt="Imagen" />
+                    <img @onclick='() => _navigate.NavigateTo($"/detalle/{item.IdLibro}")' style="cursor:default;" src="@item.Imagen" alt="Imagen" />
                 </div>
                 <div>Precio: @item.Titulo</div>
                 <div>Precio: @item.Precio</div>
+                <div>
+                    <button class="btn btn-primary" @onclick="() => Agregar(item.IdLibro)" >Agregar al Carrito</button>                    
+                </div>
             </div>
         }
     </div>
 }
 
 @code {
-    List<LibroViewModel>  libros = new();
+    List<LibroViewModel>  libros = new List<LibroViewModel>();
+    private string toastMessage = string.Empty;
+    private bool showToast = false;
+    bool Exito = false;
+
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -34,5 +53,45 @@ else
     async Task CargarLibro()
     {
         libros = await _service.ListaLibros();
+    }
+
+    async Task<string> getUserId()
+    {
+        var user = (await _authenticationStateProvider.GetAuthenticationStateAsync()).User;
+        var UserId = user.FindFirst(u => u.Type.Contains("nameidentifier"))?.Value;
+        return UserId;
+    }
+
+    async Task Agregar(int id)
+    {
+        var buscarLibro = await _service.obtenerLibro(id);
+        var userId = await getUserId();
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            toastMessage = "Debe Registrarse y/o Iniciar Sesión para poder agregar productos";           
+            ShowToast();
+        }
+        else
+        {
+            var response = await _serviceL.CrearDetalleVenta(buscarLibro, userId);
+            Exito = response.Exito;
+            toastMessage = response.Mensaje;
+            ShowToast();
+        }
+
+        
+
+      
+    }
+
+    private void ShowToast()
+    {
+        showToast = true;
+        // Ocultar el toast después de 3 segundos
+        Task.Delay(3000).ContinueWith(_ =>
+        {
+            InvokeAsync(() => showToast = false);
+        });
     }
 }

@@ -1,0 +1,76 @@
+﻿
+<div class="toast-container">
+    <div class="@GetToastClass()" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="me-auto">Notificación</strong>
+            <button type="button" class="btn-close" @onclick="() => Show = false"></button>
+        </div>
+        <div class="toast-body" style="color:@cambiarColor(Exito);">
+            @Message
+        </div>
+    </div>
+</div>
+
+<style>
+    .toast-container {
+        position: fixed;
+        top: 1rem; /* Ajusta el espacio desde el borde superior */
+        right: 1rem; /* Ajusta el espacio desde el borde derecho */
+        z-index: 9999; /* Asegúrate de que el toast esté sobre otros elementos */
+    }
+
+    .toast {
+    opacity: 0;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    transform: translateY(-10px); /* Desplaza el toast hacia arriba */
+    }
+
+    .toast.show {
+        opacity: 1;
+        transform: translateY(0); /* Mueve el toast a su posición original */
+    }
+
+    .toast.hide {
+        opacity: 0;
+        transform: translateY(-10px); /* Mueve el toast hacia arriba */
+    }
+</style>
+
+
+
+@code {
+    [Parameter]
+    public string Message { get; set; }
+
+    [Parameter]
+    public bool Show { get; set; }
+
+    [Parameter]
+    public bool Exito { get; set; }
+
+    private string cambiarColor(bool exito)
+    {
+        if (!exito)
+        {
+            return "red";
+        }
+        else
+        {
+            return "green";
+        }
+
+    }
+
+    private string GetToastClass() =>
+        Show ? "toast show" : "toast hide";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Show)
+        {
+            await Task.Delay(3000); // Espera 2 segundos
+            Show = false; // Oculta el toast después de 2 segundos
+            StateHasChanged(); // Actualiza el estado del componente
+        }
+    }
+}

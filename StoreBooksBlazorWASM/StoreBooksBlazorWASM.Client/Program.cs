@@ -1,6 +1,7 @@
 using Blazored.Modal;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using SoreBooksBlazorWASM.Service;
 using StoreBooksBlazorWASM.Client;
 using StoreBooksBlazorWASM.Client.Services;
 
@@ -12,6 +13,8 @@ builder.Services.AddSingleton<AuthenticationStateProvider, PersistentAuthenticat
 
 builder.Services.AddScoped<LibroService>();
 builder.Services.AddScoped<VentasService>();
+builder.Services.AddScoped<UsuarioServicio>();
+
 
 builder.Services.AddBlazoredModal();
 

@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using StoreBooksBlazorWASM.Client.Pages;
 using StoreBooksBlazorWASM.Components;
 using StoreBooksBlazorWASM.Components.Account;
 using StoreBooksBlazorWASM.Data;
@@ -22,7 +21,11 @@ builder.Services.AddScoped<LibroManagerV1>();
 builder.Services.AddScoped<LibroService>();
 builder.Services.AddScoped<VentasManagerV1>();
 builder.Services.AddScoped<VentasService>();
+builder.Services.AddScoped<UsuarioServicio>();
+builder.Services.AddScoped<UsuarioManagerV1>();
 builder.Services.AddBlazoredModal();
+
+
 
 
 builder.Services.AddCascadingAuthenticationState();
@@ -41,6 +44,7 @@ builder.Services.AddAuthentication(options =>
 //var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("conexionSQL")));
+
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)

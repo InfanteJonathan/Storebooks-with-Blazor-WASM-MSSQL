@@ -1,4 +1,6 @@
-﻿using StoreBooksBlazorWASM.Data.ViewModels;
+﻿using Microsoft.AspNetCore.Identity;
+using StoreBooksBlazorWASM.Data;
+using StoreBooksBlazorWASM.Data.ViewModels;
 using System.Net.Http.Json;
 
 namespace StoreBooksBlazorWASM.Client.Services
@@ -6,18 +8,22 @@ namespace StoreBooksBlazorWASM.Client.Services
     public class VentasService
     {
         private HttpClient _httpClient;
+        private readonly UsuarioServicio _usuarioServicio;
 
-        public VentasService(HttpClient httpClient)
+        public VentasService(HttpClient httpClient, UsuarioServicio usuarioServicio)
         {
             _httpClient = httpClient;
+            _usuarioServicio = usuarioServicio;
         }
 
 
-        public async Task<List<VentaGeneral>> detalleGeneral()
+        public async Task<List<VentaGeneral>> detalleGeneral(string id)
         {
             try
             {
-                var response = await _httpClient.GetAsync("api/ventas/detalles");
+                //var usuarioActualId = await _usuarioServicio.ObtenerUsuarioActualAsync();
+
+                var response = await _httpClient.GetAsync($"api/ventas/detalles/{id}");
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -25,21 +31,24 @@ namespace StoreBooksBlazorWASM.Client.Services
                 }
                 else
                 {
-                    var error  = await response.Content.ReadAsStringAsync();
-                    throw new HttpRequestException(error);
+                    var error = await response.Content.ReadAsStringAsync();
+                    throw new Exception(error);
                 }
             }
-            catch(HttpRequestException ex)
+            catch (HttpRequestException ex)
             {
-                throw new HttpRequestException("Erro al obtener las ventas, "+ex.Message);
+                throw new HttpRequestException("Error al obtener las ventas, " + ex.Message);
             }
         }
 
-        public async Task<MensajeOperacion> CrearDetalleVenta(LibroViewModel model)
+
+        public async Task<MensajeOperacion> CrearDetalleVenta(LibroViewModel model,string id)
         {
             try
             {
-                var response = await _httpClient.PostAsJsonAsync("api/ventas/agregarDetalle", model);
+
+                var response = await _httpClient.PostAsJsonAsync($"api/ventas/agregarDetalle/{id}", model);
+
 
                 if(response.IsSuccessStatusCode)
                 {
@@ -58,12 +67,34 @@ namespace StoreBooksBlazorWASM.Client.Services
             }
         }
 
+        public async Task<VentaViewModel> ObtenerVenta(string userid)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"api/ventas/obtenerVenta/{userid}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return await response.Content.ReadFromJsonAsync<VentaViewModel>();
+                }
+                else
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    throw new Exception(error);
+                }
+            }
+            catch(HttpRequestException ex)
+            {
+                throw new HttpRequestException(ex.Message);
+            }
+        }
+
 
         public async Task<MensajeOperacion> EliminarDetalleVenta(int id)
         {
             try
             {
-                var response = await _httpClient.DeleteAsync($"api/ventas/eliminarDetalle{id}");
+                var response = await _httpClient.DeleteAsync($"api/ventas/eliminarDetalle/{id}");
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -82,11 +113,11 @@ namespace StoreBooksBlazorWASM.Client.Services
             }
         }
 
-        public async Task<MensajeOperacion> CompletarVenta(VentaViewModel model)
+        public async Task<MensajeOperacion> CompletarVenta(VentaViewModel model,string userid)
         {
             try
-            {
-                var response = await _httpClient.PostAsJsonAsync("api/ventas/completarVenta", model);
+            {                
+                var response = await _httpClient.PostAsJsonAsync($"api/ventas/completarVenta/{userid}", model);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -96,7 +127,7 @@ namespace StoreBooksBlazorWASM.Client.Services
                 else
                 {
                     var mensajeError = await response.Content.ReadAsStringAsync();
-                    return new MensajeOperacion { Exito = true, Mensaje = mensajeError };
+                    return new MensajeOperacion { Exito = false, Mensaje = mensajeError };
                 }
             }
             catch (HttpRequestException ex)

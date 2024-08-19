@@ -10,7 +10,7 @@ namespace StoreBooksBlazorWASM.Data.ViewModels
     public class VentaViewModel
     {
         public int IdVenta { get; set; }
-        public required string IdUsuario { get; set; }
+        public  string IdUsuario { get; set; }
         public DateTime FechaVenta { get; set; }
         public decimal? Total { get; set; }
         public string? Estado { get; set; }
@@ -37,6 +37,6 @@ namespace StoreBooksBlazorWASM.Data.ViewModels
         public string Titulo { get; set; }
         public int Cantidad { get; set; }
         public decimal PrecioUnitario { get; set; }
-        public decimal? TotalVenta { get;  set; }
+        public decimal? TotalVenta { get; set; }
     }
 }
