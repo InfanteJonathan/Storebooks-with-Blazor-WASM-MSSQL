@@ -1,0 +1,83 @@
+﻿<div class="carousel">
+    <div class="carousel-inner">
+        @if (Images != null)
+        {
+            @foreach (var image in Images.Select((value, index) => new { value, index }))
+            {
+                <div class="@GetSlideClass(image.index)">
+                    <img src="@image.value" class="d-block w-100" alt="Slide @image.index" style="height:500px;width:400px;"/>
+                </div>
+            }
+        }
+    </div>
+
+    <button @onclick="PreviousSlide" class="carousel-control-prev" type="button">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+    </button>
+
+    <button @onclick="NextSlide" class="carousel-control-next" type="button">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+    </button>
+</div>
+
+<style>
+    .carousel {
+        position: relative;
+    }
+
+    .carousel-inner {
+        display: flex;
+        overflow: hidden;
+    }
+
+    .carousel-item {
+        flex: 0 0 100%;
+        transition: transform 0.6s ease-in-out;
+    }
+
+        .carousel-item.active {
+            transform: translateX(0);
+        }
+
+    .carousel-control-prev,
+    .carousel-control-next {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+    }
+
+    .carousel-control-prev {
+        left: 0;
+    }
+
+    .carousel-control-next {
+        right: 0;
+    }
+</style>
+
+@code {
+    private int _currentSlideIndex = 0;
+    private int _totalSlides => Images?.Length ?? 0;
+
+    [Parameter]
+    public string[] Images { get; set; } = Array.Empty<string>();
+
+    private void NextSlide()
+    {
+        _currentSlideIndex = (_currentSlideIndex + 1) % _totalSlides;
+    }
+
+    private void PreviousSlide()
+    {
+        _currentSlideIndex = (_currentSlideIndex - 1 + _totalSlides) % _totalSlides;
+    }
+
+    private string GetSlideClass(int index)
+    {
+        return index == _currentSlideIndex ? "carousel-item active" : "carousel-item";
+    }
+}

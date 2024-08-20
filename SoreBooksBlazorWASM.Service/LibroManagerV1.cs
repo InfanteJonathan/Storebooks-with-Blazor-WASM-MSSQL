@@ -31,6 +31,7 @@ namespace StoreBooksBlazorWASM.Service
                         Autor = libro.Autor,
                         Precio = libro.Precio,
                         Categoria = libro.Categoria.NombreCategoria,
+                        Cantidad = libro.Cantidad,
                         Imagen = libro.Imagen,
                         FechaPublicacion = libro.FechaPublicacion,
                     })
@@ -58,6 +59,7 @@ namespace StoreBooksBlazorWASM.Service
                 Autor = libro.Autor,
                 Precio = libro.Precio,
                 Categoria = buscarCategoria,
+                Cantidad = libro.Cantidad,
                 Imagen = libro.Imagen,
                 FechaPublicacion = libro.FechaPublicacion,
                 activo = libro.Activo
@@ -80,6 +82,7 @@ namespace StoreBooksBlazorWASM.Service
                         Autor = libro.Autor,
                         Precio = libro.Precio,
                         Categoria = libro.Categoria.NombreCategoria,
+                        Cantidad = libro.Cantidad,
                         Imagen = libro.Imagen,
                         FechaPublicacion = libro.FechaPublicacion,
                     })
@@ -105,6 +108,7 @@ namespace StoreBooksBlazorWASM.Service
                 newLibro.Autor = model.Autor;
                 newLibro.Precio = model.Precio;
                 newLibro.IdCategoria = buscarId;
+                newLibro.Cantidad = model.Cantidad;
                 newLibro.FechaPublicacion = model.FechaPublicacion;
                 newLibro.Imagen = model.Imagen;
                 newLibro.Activo = true;
@@ -136,6 +140,7 @@ namespace StoreBooksBlazorWASM.Service
             libro.Autor = model.Autor;
             libro.Precio = model.Precio;
             libro.IdCategoria = buscarIdCategoria;
+            libro.Cantidad = model.Cantidad;
             libro.FechaPublicacion = model.FechaPublicacion;
             libro.Imagen = model.Imagen;
             libro.Activo = model.activo;

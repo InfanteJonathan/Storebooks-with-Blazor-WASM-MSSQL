@@ -7,6 +7,9 @@
 <h3>Detalle Venta</h3>
 
 
+<Toast Message="@messageToast" Show="@showToast" Exito="@exito"></Toast>
+
+
 <div style="display:flex; justify-content:space-between">
     <div>
         @if(!lista.Any())
@@ -76,6 +79,8 @@
     [Parameter]
     public string userid { get; set;}
     VentaViewModel venta = new VentaViewModel();
+    private bool showToast = false;
+    string messageToast = string.Empty;
     string message = string.Empty;
     bool exito = false;
     List<VentaGeneral> lista = new List<VentaGeneral>();
@@ -89,30 +94,35 @@
 
     private async Task CompletarVenta()
     {
-        try
-        {
-            var response = await _service.CompletarVenta(venta, userid);
-            message = response.Mensaje;
-            exito = response.Exito;
+        var response = await _service.CompletarVenta(venta, userid);
+        exito = response.Exito;
 
-            lista = new List<VentaGeneral>();
-            venta = new VentaViewModel();
+        if (!exito)
+        {
+            messageToast = "Error, No se pudo completar la venta, intentelo nuevamente...";
+        }
+        else
+        {
+            messageToast = response.Mensaje;
 
             await LlamarDetalles();
             await ObtenerVenta();
+        }
 
-            
-        }
-        catch
-        {
-            lista = new List<VentaGeneral>();
-            venta = new VentaViewModel();
-        }
+        ShowToast();
+
     }
 
     async Task ObtenerVenta()
     {
-        venta = await _service.ObtenerVenta(userid);
+        try
+        {
+            venta = await _service.ObtenerVenta(userid);
+        }
+        catch
+        {
+            venta = new VentaViewModel();
+        }
     }
 
 
@@ -134,7 +144,6 @@
         var buscarLibro = await _serviceL.obtenerLibro(id);
         await _service.CrearDetalleVenta(buscarLibro, userid);
 
-
         await LlamarDetalles();
         await ObtenerVenta();
     }
@@ -144,9 +153,18 @@
         message = response.Mensaje;
         exito = response.Exito;
 
-
         await LlamarDetalles();
         await ObtenerVenta();
 
+    }
+
+    private void ShowToast()
+    {
+        showToast = true;
+        // Ocultar el toast después de 3 segundos
+        Task.Delay(3000).ContinueWith(_ =>
+        {
+            InvokeAsync(() => showToast = false);
+        });
     }
 }

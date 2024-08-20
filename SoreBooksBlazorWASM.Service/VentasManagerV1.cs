@@ -30,9 +30,11 @@ namespace SoreBooksBlazorWASM.Service
                     .FirstOrDefaultAsync();
 
 
-                if (buscarVentaActiva == null)
+                if (string.IsNullOrEmpty(model.MetodoPago) ||
+                    string.IsNullOrWhiteSpace(model.DireccionEnvio)
+                    )
                 {
-                    throw new Exception("Carrito de Compras Vacio");
+                    throw new Exception("Error al registrar la venta, intentelo nuevamente");
                 }
 
 
@@ -218,22 +220,20 @@ namespace SoreBooksBlazorWASM.Service
             try
             {
                 var buscarDetalle = await _context.DetalleVentas
-                    .Where(dv => dv.IdDetalleVentas == idDetalleVenta)
-                    .FirstOrDefaultAsync();
-
-                var contarDetalles = await _context.DetalleVentas
-                    .Select(x => x.IdDetalleVentas)
-                    .CountAsync();
+                    .FirstOrDefaultAsync(dv => dv.IdDetalleVentas == idDetalleVenta);
 
                 var buscarVenta = await _context.Ventas
-                    .Where(v => v.IdVenta == buscarDetalle.IdVenta)
-                    .FirstOrDefaultAsync();
+                    .FirstOrDefaultAsync(v => v.IdVenta == buscarDetalle.IdVenta);
 
                 if (buscarDetalle.Cantidad == 1)
                 {
                     _context.DetalleVentas.Remove(buscarDetalle);
 
-                    if (contarDetalles == 1)
+                    var contarDetalles = await _context.DetalleVentas
+                        .Where(dv => dv.IdVenta == buscarVenta.IdVenta)
+                        .CountAsync();
+
+                    if (contarDetalles <=1 )
                     {
                         _context.Ventas.Remove(buscarVenta);
                     }

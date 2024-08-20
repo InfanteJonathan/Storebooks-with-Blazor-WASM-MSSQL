@@ -41,9 +41,7 @@
             <AuthorizeView>
                 <Authorized>
                     <div>
-                        <li class="nav-item">
-                            <button class="btn btn-success" @onclick="detalles" >Compras</button>
-                        </li>
+                        <button class="btn btn-success" @onclick="detalles"><i class="bi bi-cart4"></i></button>
                     </div>
                     <div class="">
                         <NavLink class="nav-link" href="Account/Manage">
@@ -61,7 +59,7 @@
                     </div>
                 </Authorized>
                 <NotAuthorized>
-                    <div class="">
+                    <div class="" style="margin-right:15px"
                         <NavLink class="btn btn-success" href="Account/Register">
                             <span class="bi bi-person-nav-menu" aria-hidden="true"></span> Register
                         </NavLink>
