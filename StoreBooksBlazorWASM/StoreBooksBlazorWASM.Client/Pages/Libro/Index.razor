@@ -1,5 +1,6 @@
 ﻿@page "/libros"
 @inject LibroService _service
+@inject UsuarioServicio _servicioU
 @using System.Threading.Tasks
 
 <PageTitle>Lista</PageTitle>
@@ -54,6 +55,8 @@ else
             </tbody>
         </table>
     </div>
+
+
 }
 
 
@@ -74,13 +77,18 @@ else
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-            await CargarLibros();
+        await CargarLibros();
     }
+
 
     async Task CargarLibros()
     {
         libros = await _service.ListaLibros();
     }
+    // private void CargarUsuarios()
+    // {
+    //     usuarios =  _servicioU.ListaUsuarios();
+    // }
 
     private async Task ShowModal()
     {

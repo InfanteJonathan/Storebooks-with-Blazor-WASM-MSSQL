@@ -14,7 +14,7 @@
 
 <PageTitle>Manage email</PageTitle>
 
-<h3>Manage email</h3>
+<h3>Gestionar Email</h3>
 
 <StatusMessage Message="@message"/>
 <div class="row">
@@ -45,10 +45,10 @@
             }
             <div class="form-floating mb-3">
                 <InputText @bind-Value="Input.NewEmail" class="form-control" autocomplete="email" aria-required="true" placeholder="Please enter new email." />
-                <label for="new-email" class="form-label">New email</label>
+                <label for="new-email" class="form-label">Nuevo Email</label>
                 <ValidationMessage For="() => Input.NewEmail" class="text-danger" />
             </div>
-            <button type="submit" class="w-100 btn btn-lg btn-primary">Change email</button>
+            <button type="submit" class="w-100 btn btn-lg btn-primary">Cambiar email</button>
         </EditForm>
     </div>
 </div>

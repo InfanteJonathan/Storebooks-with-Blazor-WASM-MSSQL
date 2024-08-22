@@ -17,11 +17,10 @@ namespace SoreBooksBlazorWASM.Service
             _authenticationStateProvider = authenticationStateProvider;
         }
 
-        public async Task<string> ObtenerIdUsuarioActualAsync()
+        public async Task<string?> GetUserIdAsync()
         {
-            var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
-            var user = authState.User;
-            return user?.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            var user = (await _authenticationStateProvider.GetAuthenticationStateAsync()).User;
+            return user.FindFirst(u => u.Type.Contains("nameidentifier"))?.Value;
         }
     }
 

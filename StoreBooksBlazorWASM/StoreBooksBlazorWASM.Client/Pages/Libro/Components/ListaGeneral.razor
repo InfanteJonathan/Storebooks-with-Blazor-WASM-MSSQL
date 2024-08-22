@@ -1,5 +1,6 @@
 ﻿@inject LibroService _service
 @inject VentasService _serviceL
+@inject UsuarioServicio _serviceU
 @inject AuthenticationStateProvider _authenticationStateProvider
 
 <h1>Últimos Libros Agregados</h1>
@@ -26,11 +27,25 @@ else
                 <div class="image-item">
                     <img @onclick='() => _navigate.NavigateTo($"/detalle/{item.IdLibro}")' style="cursor:default;" src="@item.Imagen" alt="Imagen" />
                 </div>
-                <div>Precio: @item.Titulo</div>
+                <div>Titulo: @item.Titulo</div>
                 <div>Precio: @item.Precio</div>
                 <div>
                     <button class="btn btn-primary" @onclick="() => Agregar(item.IdLibro)"><i class="bi bi-cart3"></i> Agregar</button>
                 </div>
+            </div>
+        }
+    </div>    
+}
+
+@if(usuarios != null)
+{
+    <div class="">
+        @foreach (var item in usuarios)
+        {
+            <div>
+                <div>Nombre: @item.Name</div>
+                <div>Email: @item.Email</div>
+                <div>Contraseña: @item.Password</div>
             </div>
         }
     </div>
@@ -41,13 +56,15 @@ else
     private string toastMessage = string.Empty;
     private bool showToast = false;
     bool Exito = false;
+    List<UserViewModel> usuarios = new();
 
 
 
     protected override async Task OnInitializedAsync()
     {
         await CargarLibro();
-
+        await getUserId();
+        await LlamarUsers();
     }
 
     async Task CargarLibro()
@@ -55,10 +72,24 @@ else
         libros = await _service.ListaLibros();
     }
 
+    async Task LlamarUsers()
+    {
+        var response = await _serviceU.ObtenerUsuariosAsync();
+
+        if(response != null)
+        {
+            usuarios = response;
+        }
+        else
+        {
+            
+        }
+    }
+
     async Task<string> getUserId()
     {
-        var user = (await _authenticationStateProvider.GetAuthenticationStateAsync()).User;
-        var UserId = user.FindFirst(u => u.Type.Contains("nameidentifier"))?.Value;
+
+        var UserId = await _serviceU.ObtenerUsuarioActualAsync();
         return UserId;
     }
 

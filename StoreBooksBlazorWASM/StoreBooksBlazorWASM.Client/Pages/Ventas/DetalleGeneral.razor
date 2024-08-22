@@ -1,8 +1,8 @@
-﻿@page "/detalleVentas/{userid}"
+﻿@page "/detalleVentas"
 
 @inject VentasService _service
 @inject LibroService _serviceL
-@inject AuthenticationStateProvider _authenticationStateProvider
+@inject UsuarioServicio _serviceU
 
 <h3>Detalle Venta</h3>
 
@@ -76,8 +76,6 @@
 </div>
 
 @code {
-    [Parameter]
-    public string userid { get; set;}
     VentaViewModel venta = new VentaViewModel();
     private bool showToast = false;
     string messageToast = string.Empty;
@@ -85,15 +83,22 @@
     bool exito = false;
     List<VentaGeneral> lista = new List<VentaGeneral>();
 
+
     protected override async Task OnInitializedAsync()
     {
         await LlamarDetalles();
         await ObtenerVenta();
     }
 
+    private async Task<string> getUser()
+    {
+        var id = await _serviceU.ObtenerUsuarioActualAsync();
+        return id;
+    }
 
     private async Task CompletarVenta()
     {
+        var userid = await getUser();
         var response = await _service.CompletarVenta(venta, userid);
         exito = response.Exito;
 
@@ -117,6 +122,7 @@
     {
         try
         {
+            var userid = await getUser();
             venta = await _service.ObtenerVenta(userid);
         }
         catch
@@ -130,6 +136,7 @@
     {
         try
         {
+            var userid = await getUser();
             lista = await _service.detalleGeneral(userid);
         }
         catch
@@ -141,6 +148,7 @@
 
     async Task Agregar(int id)
     {
+        var userid = await getUser();
         var buscarLibro = await _serviceL.obtenerLibro(id);
         await _service.CrearDetalleVenta(buscarLibro, userid);
 

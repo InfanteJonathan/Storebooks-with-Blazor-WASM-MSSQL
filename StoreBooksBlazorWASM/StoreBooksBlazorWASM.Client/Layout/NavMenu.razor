@@ -53,7 +53,7 @@
                             <AntiforgeryToken />
                             <input type="hidden" name="ReturnUrl" value="@currentUrl" />
                             <button type="submit" class="btn btn-danger">
-                                <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Logout
+                                <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Cerrar Sesión
                             </button>
                         </form>
                     </div>
@@ -61,12 +61,12 @@
                 <NotAuthorized>
                     <div class="" style="margin-right:15px"
                         <NavLink class="btn btn-success" href="Account/Register">
-                            <span class="bi bi-person-nav-menu" aria-hidden="true"></span> Register
+                            <span class="bi bi-person-nav-menu" aria-hidden="true"></span> Resgistrar
                         </NavLink>
                     </div>
                     <div class="">
                         <NavLink class="btn btn-primary" href="Account/Login">
-                            <span  class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Login
+                            <span  class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Iniciar Sesión
                         </NavLink>
                     </div>
                 </NotAuthorized>
@@ -80,14 +80,13 @@
     private bool collapseNavMenu = true;
     private string? NavBarCssClass => collapseNavMenu ? null : "show";
     private string? NavButtonCssClass => collapseNavMenu ? "collapsed" : null;
-    string texto = "";
-    public string userid = string.Empty; 
+    string texto = ""; 
 
     protected override async void OnInitialized()
     {
         currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
         NavigationManager.LocationChanged += OnLocationChanged;
-        await getUserId();
+
     }
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
@@ -115,16 +114,9 @@
         }
     }
 
-    async Task getUserId()
-    {
-        var user = (await _authenticationStateProvider.GetAuthenticationStateAsync()).User;
-        var UserId = user.FindFirst(u => u.Type.Contains("nameidentifier"))?.Value;
-        userid = UserId;
-    }
-
     public void detalles()
     {
-        _navigate.NavigateTo($"/detalleVentas/{userid}");
+        _navigate.NavigateTo($"/detalleVentas");
     }
 }
 
