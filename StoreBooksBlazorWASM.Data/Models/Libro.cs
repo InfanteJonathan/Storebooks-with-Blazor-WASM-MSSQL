@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace StoreBooksBlazorWASM.Data.Models
 {
     [Table("Libros")]
-    public class Libro:BaseModel
+    public  class Libro:BaseModel
     {
         [Key]
         public int IdLibro { get; set; }

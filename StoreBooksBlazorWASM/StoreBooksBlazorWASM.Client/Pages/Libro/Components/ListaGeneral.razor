@@ -5,20 +5,13 @@
 
 <h1>Últimos Libros Agregados</h1>
 
+<Toast Message="@messageToast" Show="@showToast" Exito="@exito"></Toast>
 
-
-@* <button @onclick="ShowToast">Show Toast</button> *@
-
-@if (toastMessage != null)
-{
-    <Toast Message="@toastMessage" Show="@showToast" Exito="@Exito"></Toast>
-}
-
-@if (libros == null)
+@if (!isDataLoaded)
 {
     <p><em>Loading...</em></p>
 }
-else
+else if (libros != null)
 {
     <div class="image-container">
         @foreach (var item in libros)
@@ -30,41 +23,42 @@ else
                 <div>Titulo: @item.Titulo</div>
                 <div>Precio: @item.Precio</div>
                 <div>
-                    <button class="btn btn-primary" @onclick="() => Agregar(item.IdLibro)"><i class="bi bi-cart3"></i> Agregar</button>
+                    <button class="btn btn-primary" @onclick="() => Agregar(item.IdLibro)">Agregar</button>
                 </div>
-            </div>
-        }
-    </div>    
-}
-
-@if(usuarios != null)
-{
-    <div class="">
-        @foreach (var item in usuarios)
-        {
-            <div>
-                <div>Nombre: @item.Name</div>
-                <div>Email: @item.Email</div>
-                <div>Contraseña: @item.Password</div>
             </div>
         }
     </div>
 }
+else
+{
+    <p><em>No se encontraron libros.</em></p>
+}
 
 @code {
-    List<LibroViewModel>  libros = new List<LibroViewModel>();
-    private string toastMessage = string.Empty;
+    List<LibroViewModel> libros = new List<LibroViewModel>();
+    private string messageToast = string.Empty;
     private bool showToast = false;
-    bool Exito = false;
+    bool exito = false;
     List<UserViewModel> usuarios = new();
-
-
+    bool isDataLoaded = false;
 
     protected override async Task OnInitializedAsync()
     {
-        await CargarLibro();
-        await getUserId();
-        await LlamarUsers();
+        try
+        {
+            var librosTask = _service.ListaLibros();
+
+            libros = await librosTask;
+        }
+        catch (Exception ex)
+        {
+            messageToast = $"Error al cargar datos: {ex.Message}";
+            await ShowToast();
+        }
+        finally
+        {
+            isDataLoaded = true;
+        }
     }
 
     async Task CargarLibro()
@@ -72,57 +66,43 @@ else
         libros = await _service.ListaLibros();
     }
 
-    async Task LlamarUsers()
+    private async Task<string> getUserId()
     {
-        var response = await _serviceU.ObtenerUsuariosAsync();
-
-        if(response != null)
-        {
-            usuarios = response;
-        }
-        else
-        {
-            
-        }
-    }
-
-    async Task<string> getUserId()
-    {
-
-        var UserId = await _serviceU.ObtenerUsuarioActualAsync();
-        return UserId;
+        return await _serviceU.ObtenerUsuarioActualAsync();
     }
 
     async Task Agregar(int id)
     {
-        var buscarLibro = await _service.obtenerLibro(id);
+        var libro = libros.FirstOrDefault(l => l.IdLibro == id);
         var userId = await getUserId();
+
+        if (libro == null)
+        {
+            libro = await _service.obtenerLibro(id);
+        }
 
         if (string.IsNullOrEmpty(userId))
         {
-            toastMessage = "Debe Registrarse y/o Iniciar Sesión para poder agregar productos";           
-            ShowToast();
+            messageToast = "Debe Registrarse y/o Iniciar Sesión para poder agregar productos";
+            await ShowToast();
         }
         else
         {
-            var response = await _serviceL.CrearDetalleVenta(buscarLibro, userId);
-            Exito = response.Exito;
-            toastMessage = response.Mensaje;
-            ShowToast();
+            var response = await _serviceL.CrearDetalleVenta(libro, userId);
+            exito = response.Exito;
+            messageToast = response.Mensaje;
+            await ShowToast();
         }
-
-        
-
-      
     }
 
-    private void ShowToast()
+
+    public async Task ShowToast()
     {
         showToast = true;
-        // Ocultar el toast después de 3 segundos
-        Task.Delay(3000).ContinueWith(_ =>
-        {
-            InvokeAsync(() => showToast = false);
-        });
+        StateHasChanged(); // Asegura que el estado se actualice
+        await Task.Delay(3000); // Usa Task.Delay en lugar de `Task.Delay().ContinueWith()`
+        showToast = false;
+        StateHasChanged(); // Asegura que el estado se actualice
     }
+
 }

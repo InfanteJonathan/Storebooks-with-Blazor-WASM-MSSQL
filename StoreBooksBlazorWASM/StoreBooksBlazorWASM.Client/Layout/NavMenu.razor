@@ -1,5 +1,4 @@
-﻿@implements IDisposable
-
+﻿
 @inject NavigationManager NavigationManager
 @inject NavigationManager _navigate
 @inject AuthenticationStateProvider _authenticationStateProvider
@@ -9,17 +8,16 @@
         <div class="container-fluid">
             <a class="navbar-brand" style="color:black" href="">Books Store</a>
             <button class="navbar-toggler @NavButtonCssClass" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
-                    aria-controls="navbarCollapse" aria-label="Toggle navigation" @onclick="ToggleNavMenu">
+                    aria-controls="navbarCollapse" aria-label="Toggle navigation" >
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="collapse navbar-collapse @NavBarCssClass" id="navbarCollapse" @onclick="ToggleNavMenu">
+            <div class="collapse navbar-collapse @NavBarCssClass" id="navbarCollapse">
                 <ul class="navbar-nav me-auto mb-2 mb-md-0">
                     <li class="nav-item">
                         <NavLink class="nav-link subt" style="color:black" href="/">
                             <span class="oi oi-home" aria-hidden="true"></span> Home
                         </NavLink>
                     </li>
-
                     <AuthorizeView>
                         <Authorized>
                             <li class="nav-item">
@@ -28,8 +26,12 @@
                                 </NavLink>
                             </li>
                         </Authorized>
+                        <NotAuthorized>
+                            <!-- Contenido opcional para usuarios sin los roles especificados -->
+                        </NotAuthorized>
                     </AuthorizeView>
-                    
+
+
                     <li class="nav-item" style="justify-content: flex-end;">
                         <form class="d-flex" onsubmit="event.preventDefault();">
                             <input class="form-control me-2 my-custom-search-input" type="search" @bind="texto" placeholder="Busca por Título | Categoría | Autor" aria-label="Search">
@@ -39,10 +41,13 @@
                 </ul>
             </div>
             <AuthorizeView>
-                <Authorized>
-                    <div>
-                        <button class="btn btn-success" @onclick="detalles"><i class="bi bi-cart4"></i></button>
-                    </div>
+                <Authorized>                    
+                    @* <div>
+                        <button class="btn btn-success" @onclick="detalles">Compras</button>
+                    </div> *@
+                    <NavLink class="btn btn-success" href="/detalleVentas">
+                            <span class="bi bi-person-nav-menu" aria-hidden="true"></span> Compras
+                        </NavLink>
                     <div class="">
                         <NavLink class="nav-link" href="Account/Manage">
                             <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> Hola @context.User.Identity?.Name !
@@ -82,27 +87,6 @@
     private string? NavButtonCssClass => collapseNavMenu ? "collapsed" : null;
     string texto = ""; 
 
-    protected override async void OnInitialized()
-    {
-        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
-        NavigationManager.LocationChanged += OnLocationChanged;
-
-    }
-
-    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
-    {
-        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
-        StateHasChanged();
-    }
-
-    public void Dispose()
-    {
-        NavigationManager.LocationChanged -= OnLocationChanged;
-    }
-    private void ToggleNavMenu()
-    {
-        collapseNavMenu = !collapseNavMenu;
-    }
 
     private void OnSearchClicked()
     {
@@ -114,9 +98,9 @@
         }
     }
 
-    public void detalles()
-    {
-        _navigate.NavigateTo($"/detalleVentas");
-    }
+    // public void detalles()
+    // {
+    //     _navigate.NavigateTo($"/detalleVentas");
+    // }
 }
 

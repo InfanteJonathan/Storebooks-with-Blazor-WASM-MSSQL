@@ -19,21 +19,17 @@ namespace StoreBooksBlazorWASM.Client.Services
             {
                 var response = await _httpClient.GetAsync("api/libros/lista");
 
-                if (response.IsSuccessStatusCode)
-                {
-                    return await response.Content.ReadFromJsonAsync<List<LibroViewModel>>();
-                }
-                else
-                {
-                    var errorMessage = await response.Content.ReadAsStringAsync();
-                    throw new HttpRequestException($"Error al obtener los datos del libro: {response.StatusCode} - {errorMessage}");
-                }
+                response.EnsureSuccessStatusCode(); // Throws an exception if the HTTP response status is an error
+
+                return await response.Content.ReadFromJsonAsync<List<LibroViewModel>>();
             }
             catch (HttpRequestException ex)
             {
-                throw new HttpRequestException(ex.Message);
+                // Log the exception (ex) here
+                throw; // Rethrow the exception to be handled elsewhere
             }
         }
+
 
         public async Task<LibroViewModel> obtenerLibro(int id)
         {

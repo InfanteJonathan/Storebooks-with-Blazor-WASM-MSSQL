@@ -1,14 +1,13 @@
 ﻿@page "/libros"
 @inject LibroService _service
 @inject UsuarioServicio _servicioU
-@using System.Threading.Tasks
+
 
 <PageTitle>Lista</PageTitle>
 
 <Notification Message="@message" IsSuccess="@exito" />
 <br />
 <h3>Catalogo de Libros</h3>
-<button @onclick="ShowModal">Nuevo Libro</button>
 <br />
 @* <button class="btn btn-primary" @onclick=Crear>Agregar</button> *@
 @* <button type="button" class="btn btn-primary" @onclick="Crear" data-bs-toggle="modal" data-bs-target="#exampleModal">Nuevo Libro</button> *@
@@ -21,7 +20,7 @@
 }
 else
 {
-    <br />
+    @* <br />
     <div class="contain">
         <table class="table table-bordered">
             <thead>
@@ -54,14 +53,33 @@ else
                 }
             </tbody>
         </table>
+    </div> *@
+
+    <div style="height: 434px; overflow:auto;" tabindex="-1">
+        <FluentDataGrid Loading="true" ItemsProvider="listaLibros" Virtualize="true" ItemSize="46" GenerateHeader="GenerateHeaderOption.Sticky" TGridItem="LibroViewModel">
+            <PropertyColumn Title="ID" Property="@(c => c!.IdLibro)" />
+            <PropertyColumn Property="@(c => c!.Titulo)" Style="color: #af5f00 ;" />
+            <PropertyColumn Property="@(c => c!.Autor)" />
+            <PropertyColumn Title="Company" Property="@(c => c!.Precio)" Tooltip="true" />
+            <PropertyColumn Property="@(c => c!.Categoria)" />
+            <PropertyColumn Property="@(c => c!.Cantidad)" />
+            <PropertyColumn Property="@(c => c!.FechaPublicacion)" />
+            <TemplateColumn Title="Actions" Align="@Align.End">
+                <FluentButton aria-label="Editar" IconEnd="@(new Icons.Regular.Size16.Edit())" OnClick="@(() => Editar(context.IdLibro))" />
+                <FluentButton aria-label="Eliminar" IconEnd="@(new Icons.Regular.Size16.Delete())" OnClick="@(() => Eliminar(context.IdLibro))" />
+            </TemplateColumn>
+        </FluentDataGrid>
     </div>
+
+    <p>Total: <strong>@numResults resultados encontrados</strong></p>
 
 
 }
 
 
 @code {
-    [CascadingParameter] public IModalService Modal { get; set; } = default!;
+    GridItemsProvider<LibroViewModel> listaLibros = default!;
+    int numResults;
     List<LibroViewModel> libros = new();
     string message = string.Empty;
     bool exito = false;
@@ -74,43 +92,54 @@ else
 
     }
 
+    // protected override void OnAfterRender(bool firstRender)
+    // {
+    //     base.OnAfterRender(firstRender);
+    // }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        await CargarLibros();
-    }
-
+    // async Task CargarLibros()
+    // {
+    //     libros = await _service.ListaLibros();
+    // }
 
     async Task CargarLibros()
     {
-        libros = await _service.ListaLibros();
-    }
-    // private void CargarUsuarios()
-    // {
-    //     usuarios =  _servicioU.ListaUsuarios();
-    // }
+        var response = await _service.ListaLibros();
+        var cantidad = response.Count();
 
-    private async Task ShowModal()
-    {
-        var agregarModal = Modal.Show<Crear>("Libro Nuevo");
-        var result = await agregarModal.Result;
-
-        if (result.Cancelled)
+        listaLibros = async req =>
         {
-            modalStatus = true;
-
-            if (modalStatus)
-            {
-                await CargarLibros();
-            }
-
-        }
-        else if(result.Confirmed){
-            Console.WriteLine("Modal cerrado");
-
-        }
+            return GridItemsProviderResult.From(
+                items: response,
+                totalItemCount: cantidad
+            );
+        };
+        numResults = cantidad;
 
     }
+
+
+    // private async Task ShowModal()
+    // {
+    //     var agregarModal = Modal.Show<Crear>("Libro Nuevo");
+    //     var result = await agregarModal.Result;
+
+    //     if (result.Cancelled)
+    //     {
+    //         modalStatus = true;
+
+    //         if (modalStatus)
+    //         {
+    //             await CargarLibros();
+    //         }
+
+    //     }
+    //     else if(result.Confirmed){
+    //         Console.WriteLine("Modal cerrado");
+
+    //     }
+
+    // }
 
 
 

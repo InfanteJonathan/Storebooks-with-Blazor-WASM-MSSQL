@@ -1,6 +1,6 @@
-using Blazored.Modal;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.FluentUI.AspNetCore.Components;
 using SoreBooksBlazorWASM.Service;
 using StoreBooksBlazorWASM.Client;
 using StoreBooksBlazorWASM.Client.Services;
@@ -15,8 +15,10 @@ builder.Services.AddScoped<LibroService>();
 builder.Services.AddScoped<VentasService>();
 builder.Services.AddScoped<UsuarioServicio>();
 
+builder.Services.AddFluentUIComponents();
+builder.Services.AddDataGridEntityFrameworkAdapter();
 
-builder.Services.AddBlazoredModal();
+
 
 builder.Services.AddScoped(http => new HttpClient
 {

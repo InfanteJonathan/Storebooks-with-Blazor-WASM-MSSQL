@@ -81,37 +81,33 @@ namespace SoreBooksBlazorWASM.Service
             try
             {
                 var buscarVentaActiva = await _context.Ventas
-                    .Where(u => u.IdUsuario == id && u.Estado == "En Proceso")
-                    .FirstOrDefaultAsync();
+                    .FirstOrDefaultAsync(u => u.IdUsuario == id && u.Estado == "En Proceso");
 
                 if (buscarVentaActiva == null)
                 {
-                    var nuevaVenta = new Ventas
+                    buscarVentaActiva = new Ventas
                     {
                         IdUsuario = id,
                         FechaVenta = DateTime.Now,
-                        Estado = "En Proceso"
+                        Estado = "En Proceso",
+                        Total = 0 // Inicializamos Total en 0
                     };
 
-                    _context.Ventas.Add(nuevaVenta);
-                    await _context.SaveChangesAsync();
-
-                    buscarVentaActiva = nuevaVenta;
+                    _context.Ventas.Add(buscarVentaActiva);
+                    await _context.SaveChangesAsync(); // Guardamos para obtener el IdVenta
                 }
 
                 var detalleExistente = await _context.DetalleVentas
-                    .Where(dv => dv.IdVenta == buscarVentaActiva.IdVenta && dv.IdLibro == model.IdLibro)
-                    .FirstOrDefaultAsync();
+                    .FirstOrDefaultAsync(dv => dv.IdVenta == buscarVentaActiva.IdVenta && dv.IdLibro == model.IdLibro);
 
                 if (detalleExistente != null)
                 {
                     detalleExistente.Cantidad += 1;
                     detalleExistente.TotalVenta = detalleExistente.Cantidad * detalleExistente.PrecioUnitario;
-
                 }
                 else
                 {
-                    var nuevoDetalle = new DetalleVentas
+                    detalleExistente = new DetalleVentas
                     {
                         IdVenta = buscarVentaActiva.IdVenta,
                         IdLibro = model.IdLibro,
@@ -120,65 +116,53 @@ namespace SoreBooksBlazorWASM.Service
                         TotalVenta = model.Precio
                     };
 
-                    detalleExistente = nuevoDetalle;
-
-                    _context.DetalleVentas.Add(nuevoDetalle);
+                    _context.DetalleVentas.Add(detalleExistente);
                 }
 
-                var sumaTotalDetalles = await _context.DetalleVentas
-                    .Where(dv => dv.IdVenta == buscarVentaActiva.IdVenta && dv.IdLibro == model.IdLibro)
-                    .SumAsync(dv => dv.TotalVenta);
-
-                buscarVentaActiva.Total += sumaTotalDetalles;
-
+                buscarVentaActiva.Total += detalleExistente.TotalVenta;
                 await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                // Puedes agregar logging aquí si lo deseas
+                throw new Exception("Ocurrió un error al agregar el libro al carrito.", ex);
             }
         }
+
 
         public async Task<List<VentaGeneral>> DetalleGeneralVenta(string id)
         {
             try
             {
-                List<VentaGeneral> listaVentaGeneral = new List<VentaGeneral>();
+                var listaVentaGeneral = new List<VentaGeneral>();
 
-                // Buscar la venta activa
+                // Buscar la venta activa junto con sus detalles
                 var buscarVentaActiva = await _context.Ventas
-                    .Where(u => u.IdUsuario == id && u.Estado == "En Proceso")
-                    .FirstOrDefaultAsync();
+                    .Include(v => v.DetalleVentas)
+                    .FirstOrDefaultAsync(u => u.IdUsuario == id && u.Estado == "En Proceso");
 
-                // Si no se encuentra la venta activa, lanzar una excepción
-                if (buscarVentaActiva == null)
+                if (buscarVentaActiva == null || !buscarVentaActiva.DetalleVentas.Any())
                 {
-                    throw new Exception("No tiene artículos añadidos o la venta no está en proceso.");
+                    throw new HttpRequestException("No tiene artículos añadidos o la venta no está en proceso.");
                 }
 
-                // Obtener detalles de venta
-                var buscarDetalleVenta = await _context.DetalleVentas
-                    .Where(dv => dv.IdVenta == buscarVentaActiva.IdVenta)
-                    .ToListAsync();
+                // Obtener los IDs de los libros de los detalles de venta
+                var idsLibros = buscarVentaActiva.DetalleVentas
+                    .Select(dv => dv.IdLibro)
+                    .Distinct()
+                    .ToList();
 
-                if (buscarDetalleVenta == null)
-                {
-                    throw new Exception("No tiene artículos añadidos");
-                }
-
-                // Obtener los libros en una sola consulta para evitar múltiples consultas
-                var idsLibros = buscarDetalleVenta.Select(dv => dv.IdLibro).Distinct().ToList();
-
+                // Obtener los libros en una sola consulta
                 var libros = await _context.Libros
                     .Where(l => idsLibros.Contains(l.IdLibro))
                     .ToDictionaryAsync(l => l.IdLibro);
 
-                foreach (var item in buscarDetalleVenta)
+                // Construir la lista de detalles de venta
+                foreach (var item in buscarVentaActiva.DetalleVentas)
                 {
-                    // Buscar el libro correspondiente usando el diccionario
                     if (libros.TryGetValue(item.IdLibro, out var buscarLibro))
                     {
-                        var nuevoDetalle = new VentaGeneral
+                        listaVentaGeneral.Add(new VentaGeneral
                         {
                             IdDetalleVentas = item.IdDetalleVentas,
                             IdLibro = item.IdLibro,
@@ -188,19 +172,12 @@ namespace SoreBooksBlazorWASM.Service
                             Cantidad = item.Cantidad,
                             PrecioUnitario = item.PrecioUnitario,
                             TotalVenta = item.TotalVenta
-                        };
-
-                        listaVentaGeneral.Add(nuevoDetalle);
-                    }
-                    else
-                    {
-                        // Manejar el caso en que no se encuentra el libro
-                        // Por ejemplo, puedes registrar un error o agregar un mensaje de advertencia
+                        });
                     }
                 }
 
-                var sumaTotalVenta = buscarDetalleVenta.Sum(dv => dv.TotalVenta);
-                buscarVentaActiva.Total = sumaTotalVenta;
+                // Actualizar el total de la venta
+                buscarVentaActiva.Total = buscarVentaActiva.DetalleVentas.Sum(dv => dv.TotalVenta);
 
                 await _context.SaveChangesAsync();
 
@@ -209,9 +186,10 @@ namespace SoreBooksBlazorWASM.Service
             catch (Exception ex)
             {
                 // Manejar la excepción adecuadamente, por ejemplo, registrando el error
-                throw new HttpRequestException("Error al obtener los detalles de la venta, " + ex.Message);
+                throw new HttpRequestException("Error al obtener los detalles de la venta: " + ex.Message);
             }
         }
+
 
 
 
@@ -220,37 +198,34 @@ namespace SoreBooksBlazorWASM.Service
             try
             {
                 var buscarDetalle = await _context.DetalleVentas
+                    .Include(v => v.Ventas)
                     .FirstOrDefaultAsync(dv => dv.IdDetalleVentas == idDetalleVenta);
 
-                var buscarVenta = await _context.Ventas
-                    .FirstOrDefaultAsync(v => v.IdVenta == buscarDetalle.IdVenta);
+
+                buscarDetalle.Ventas.Total -= buscarDetalle.PrecioUnitario;
+
 
                 if (buscarDetalle.Cantidad == 1)
                 {
                     _context.DetalleVentas.Remove(buscarDetalle);
 
                     var contarDetalles = await _context.DetalleVentas
-                        .Where(dv => dv.IdVenta == buscarVenta.IdVenta)
+                        .Where(dv => dv.IdVenta == buscarDetalle.Ventas.IdVenta)
                         .CountAsync();
 
-                    if (contarDetalles <=1 )
+                    if (contarDetalles == 1 )
                     {
-                        _context.Ventas.Remove(buscarVenta);
+                        _context.Ventas.Remove(buscarDetalle.Ventas);
                     }
 
                 }
-                else if(buscarDetalle.Cantidad >1)
+                else
                 {
 
-                    buscarDetalle.Cantidad = buscarDetalle.Cantidad - 1;
-                    buscarDetalle.TotalVenta = buscarDetalle.TotalVenta - buscarDetalle.PrecioUnitario;
+                    buscarDetalle.Cantidad -= 1;
+                    buscarDetalle.TotalVenta -= buscarDetalle.PrecioUnitario;
 
-
-                    buscarVenta.Total -= buscarDetalle.TotalVenta; 
-
-                }
-
-                
+                }                
 
                 await _context.SaveChangesAsync();                
 

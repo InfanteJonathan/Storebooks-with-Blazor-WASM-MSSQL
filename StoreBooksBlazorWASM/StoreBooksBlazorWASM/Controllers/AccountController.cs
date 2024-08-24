@@ -12,14 +12,10 @@ namespace StoreBooksBlazorWASM.Controllers
 {
     [Route("api/account")]
     [ApiController]
-    /*[Authorize]*/ // Asegúrate de que el usuario esté autenticado
     public class AccountController : ControllerBase
     {
         private readonly UsuarioManagerV1 _usuarioManagerV1;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly AspNetRoleManager<ApplicationUser> role;
-
-
 
         public AccountController(UsuarioManagerV1 usuarioManagerV1, UserManager<ApplicationUser> userManager)
         {
