@@ -19,6 +19,18 @@ builder.Services.AddFluentUIComponents();
 builder.Services.AddDataGridEntityFrameworkAdapter();
 
 
+builder.Services.AddAuthorizationCore(options =>
+{
+    options.AddPolicy("AdministradorPolicy", policy =>
+        policy.RequireRole("Administrador"));
+    options.AddPolicy("EmpleadoPolicy", policy =>
+        policy.RequireRole("Empleado"));
+    options.AddPolicy("UsuarioPolicy", policy =>
+        policy.RequireRole("Usuario"));
+});
+
+
+
 
 builder.Services.AddScoped(http => new HttpClient
 {
@@ -26,3 +38,5 @@ builder.Services.AddScoped(http => new HttpClient
 });
 
 await builder.Build().RunAsync();
+
+

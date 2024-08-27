@@ -1,7 +1,9 @@
 ﻿@inject LibroService _service
 @inject VentasService _serviceL
 @inject UsuarioServicio _serviceU
-@inject AuthenticationStateProvider _authenticationStateProvider
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender:false))
+
+
 
 <h1>Últimos Libros Agregados</h1>
 
@@ -49,6 +51,8 @@ else
             var librosTask = _service.ListaLibros();
 
             libros = await librosTask;
+
+            
         }
         catch (Exception ex)
         {

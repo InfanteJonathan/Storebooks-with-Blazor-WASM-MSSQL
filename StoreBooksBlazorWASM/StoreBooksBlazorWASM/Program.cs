@@ -53,6 +53,8 @@ builder.Services.AddAuthentication(options =>
     })
     .AddIdentityCookies();
 
+
+
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy("UsuarioPolicy", policy =>
         policy.RequireRole("Usuario"))

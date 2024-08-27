@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using StoreBooksBlazorWASM.Data;
 using StoreBooksBlazorWASM.Data.Models;
 using StoreBooksBlazorWASM.Data.ViewModels;
+using StoreBooksBlazorWASM.Service;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +16,7 @@ namespace SoreBooksBlazorWASM.Service
     public class VentasManagerV1
     {
         private readonly ApplicationDbContext _context;
+        private LibroManagerV1 _libroManagerV1;
 
         public VentasManagerV1( ApplicationDbContext context)
         {
@@ -117,10 +119,13 @@ namespace SoreBooksBlazorWASM.Service
                     };
 
                     _context.DetalleVentas.Add(detalleExistente);
-                }
+                }                              
 
                 buscarVentaActiva.Total += detalleExistente.TotalVenta;
                 await _context.SaveChangesAsync();
+
+
+                await AdministrarInventarioLibros(detalleExistente.IdLibro, "eliminar");
             }
             catch (Exception ex)
             {
@@ -225,11 +230,37 @@ namespace SoreBooksBlazorWASM.Service
                     buscarDetalle.Cantidad -= 1;
                     buscarDetalle.TotalVenta -= buscarDetalle.PrecioUnitario;
 
-                }                
+                }
+
+                await AdministrarInventarioLibros(buscarDetalle.IdLibro,"agregar");
 
                 await _context.SaveChangesAsync();                
 
 
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+
+        public async Task AdministrarInventarioLibros(int id, string nombre)
+        {
+            try
+            {
+                var libro = await _context.Libros.FirstOrDefaultAsync(l => l.IdLibro == id);
+
+                if (nombre.Equals("eliminar"))
+                {
+                    libro.Cantidad -= 1;
+                }
+                else
+                {
+                    libro.Cantidad += 1;
+                }
+
+                await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
