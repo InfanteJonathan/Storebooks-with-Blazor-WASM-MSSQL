@@ -1,14 +1,12 @@
-﻿
-@inject NavigationManager NavigationManager
-@inject NavigationManager _navigate
+﻿@inject NavigationManager _navigate
 @inject AuthenticationStateProvider _authenticationStateProvider
 
-<div class="main container">
+@* <div class="main container">
     <nav class="navbar navbar-expand-md navbar-dark bg-gray mb-4">
         <div class="container-fluid">
             <a class="navbar-brand" style="color:black" href="">Books Store</a>
             <button class="navbar-toggler @NavButtonCssClass" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
-                    aria-controls="navbarCollapse" aria-label="Toggle navigation" >
+                    aria-controls="navbarCollapse" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse @NavBarCssClass" id="navbarCollapse">
@@ -37,17 +35,17 @@
                             <input class="form-control me-2 my-custom-search-input" type="search" @bind="texto" placeholder="Busca por Título | Categoría | Autor" aria-label="Search">
                             <button class="btn btn-outline-success" @onclick="OnSearchClicked">Buscar</button>
                         </form>
-                    </li>                    
+                    </li>
                 </ul>
             </div>
             <AuthorizeView>
-                <Authorized>                    
-                    @* <div>
-                        <button class="btn btn-success" @onclick="detalles">Compras</button>
-                    </div> *@
+                <Authorized>
+                    <div>
+                    <button class="btn btn-success" @onclick="detalles">Compras</button>
+                    </div>
                     <NavLink class="btn btn-success" href="/detalleVentas">
-                            <span class="bi bi-person-nav-menu" aria-hidden="true"></span> Compras
-                        </NavLink>
+                        <span class="bi bi-person-nav-menu" aria-hidden="true"></span> Compras
+                    </NavLink>
                     <div class="">
                         <NavLink class="nav-link" href="Account/Manage">
                             <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> Hola @context.User.Identity?.Name !
@@ -71,21 +69,103 @@
                     </div>
                     <div class="">
                         <NavLink class="btn btn-primary" href="Account/Login">
-                            <span  class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Iniciar Sesión
+                            <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Iniciar Sesión
                         </NavLink>
                     </div>
                 </NotAuthorized>
             </AuthorizeView>
         </div>
     </nav>
-</div>
+</div> *@
+
+<Bar Breakpoint="Breakpoint.Desktop"
+     Background="Background.Light"
+     ThemeContrast="ThemeContrast.Light"
+     Class="main container">
+    <BarBrand>
+        Books Store
+    </BarBrand>
+    <BarToggler />
+    <BarMenu>
+        <BarStart>
+            <BarItem>
+                <BarLink To="/">Home</BarLink>
+            </BarItem>
+
+            <AuthorizeView Roles="Administrador">
+                <Authorized>
+                    <BarItem>
+                        <BarDropdown>
+                            <BarDropdownToggle>Gestionar</BarDropdownToggle>
+                            <BarDropdownMenu>
+                                <BarDropdownItem To="/libros">Libros</BarDropdownItem>
+                                <BarDropdownDivider />
+                                <BarDropdownItem To="/Usuarios">Usuarios</BarDropdownItem>
+                                <BarDropdownDivider />
+                                <BarDropdownItem>Ventas</BarDropdownItem>
+                            </BarDropdownMenu>
+                        </BarDropdown>
+                    </BarItem>                    
+                </Authorized>
+            </AuthorizeView>
+
+        </BarStart>
+        <BarEnd>
+            <BarItem>
+                <form class="d-flex" onsubmit="event.preventDefault();">
+                    <input class="form-control me-2 my-custom-search-input" type="search" @bind="texto" placeholder="Busca por Título | Categoría | Autor" aria-label="Search">
+                    <Button Color="Color.Success" @onclick="OnSearchClicked">Buscar</Button>
+                </form>
+            </BarItem>
+
+            <AuthorizeView>
+                <Authorized>
+                    <BarItem>
+                        <BarLink To="/detalleVentas">
+                            <Button Color="Color.Success">Compras</Button>
+                        </BarLink>
+                    </BarItem>
+                    <BarItem>
+                        <BarLink To="Account/Manage">
+                            <Span class="bi bi-person-fill-nav-menu" aria-hidden="true"></Span> Hola @context.User.Identity?.Name !
+                        </BarLink>
+                    </BarItem>
+                    <BarItem>
+                        <div class="">
+                            <form action="Account/Logout" method="post">
+                                <AntiforgeryToken />
+                                <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+                                <button type="submit" class="btn btn-danger">
+                                    <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Cerrar Sesión
+                                </button>
+                            </form>
+                        </div>
+                    </BarItem>
+                </Authorized>
+                <NotAuthorized>
+                    <BarItem>
+                        <BarLink To="Account/Register">
+                            <Button Color="Color.Success">Sign up</Button>
+                        </BarLink>
+                    </BarItem>
+                    <BarItem>
+                        <BarLink To="Account/Login">
+                            <Button Color="Color.Primary">Log in</Button>
+                        </BarLink>
+                    </BarItem>
+                </NotAuthorized>
+            </AuthorizeView>
+
+        </BarEnd>
+    </BarMenu>
+</Bar>
 
 @code {
     private string? currentUrl;
     private bool collapseNavMenu = true;
     private string? NavBarCssClass => collapseNavMenu ? null : "show";
     private string? NavButtonCssClass => collapseNavMenu ? "collapsed" : null;
-    string texto = ""; 
+    string texto = "";
 
 
     private void OnSearchClicked()
@@ -93,7 +173,7 @@
         if (!string.IsNullOrWhiteSpace(texto))
         {
             string encodedTexto = Uri.EscapeDataString(texto);
-            NavigationManager.NavigateTo($"/buscar/{encodedTexto}");
+            _navigate.NavigateTo($"/buscar/{encodedTexto}");
             texto = "";
         }
     }

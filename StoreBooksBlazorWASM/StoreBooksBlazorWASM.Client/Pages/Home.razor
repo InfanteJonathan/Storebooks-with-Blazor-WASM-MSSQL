@@ -1,10 +1,10 @@
 ﻿@page "/"
-
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 <PageTitle>Principal</PageTitle>
 
 
 <div>
-    <Carousel Images='new string[] { "Image/libro1.png", "Image/libro2.png", "Image/libro3.png" }' />
+    <CarouselComp />
     <ListaGeneral />
 </div>
 

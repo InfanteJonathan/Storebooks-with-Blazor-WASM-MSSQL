@@ -11,9 +11,8 @@
 <br />
 <h3>Catalogo de Libros</h3>
 <br />
-@* <button class="btn btn-primary" @onclick=Crear>Agregar</button> *@
-@* <button type="button" class="btn btn-primary" @onclick="Crear" data-bs-toggle="modal" data-bs-target="#exampleModal">Nuevo Libro</button> *@
 
+<Crear OnDatoCreado="OnLibroCreado"/>
 
 <br />
 @if (libros == null)
@@ -22,71 +21,57 @@
 }
 else
 {
-    @* <br />
-    <div class="contain">
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Titulo</th>
-                    <th>Autor</th>
-                    <th>Precio</th>
-                    <th>Categoria</th>
-                    <th>Cantidad</th>
-                    <th>Fecha Publicacion</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var forecast in libros)
-                {
-                    <tr>
-                        <td>@forecast.Titulo </td>
-                        <td>@forecast.Autor</td>
-                        <td>@forecast.Precio</td>
-                        <td>@forecast.Categoria</td>
-                        <td>@forecast.Cantidad</td>
-                        <td>@forecast.FechaPublicacion</td>
-                        <td>
-                            <button class="btn btn-success" @onclick="() => Editar(forecast.IdLibro)">Editar</button>
-                            <button class="btn btn-secondary" @onclick="() => Detalles(forecast.IdLibro)">Detalles</button>
-                            <button class="btn btn-danger" @onclick="() => Eliminar(forecast.IdLibro)">Eliminar</button>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div> *@
+    
 
-    <div style="height: 434px; overflow:auto;" tabindex="-1">
-        <FluentDataGrid Loading="true" ItemsProvider="listaLibros" Virtualize="true" ItemSize="46" GenerateHeader="GenerateHeaderOption.Sticky" TGridItem="LibroViewModel">
-            <PropertyColumn Title="ID" Property="@(c => c!.IdLibro)" />
-            <PropertyColumn Property="@(c => c!.Titulo)" Style="color: #af5f00 ;" />
-            <PropertyColumn Property="@(c => c!.Autor)" />
-            <PropertyColumn Title="Company" Property="@(c => c!.Precio)" Tooltip="true" />
-            <PropertyColumn Property="@(c => c!.Categoria)" />
-            <PropertyColumn Property="@(c => c!.Cantidad)" />
-            <PropertyColumn Property="@(c => c!.FechaPublicacion)" />
-            <TemplateColumn Title="Actions" Align="@Align.End">
-                <FluentButton aria-label="Editar" IconEnd="@(new Icons.Regular.Size16.Edit())" OnClick="@(() => Editar(context.IdLibro))" />
-                <FluentButton aria-label="Eliminar" IconEnd="@(new Icons.Regular.Size16.Delete())" OnClick="@(() => Eliminar(context.IdLibro))" />
-            </TemplateColumn>
-        </FluentDataGrid>
-    </div>
+    <Table FixedHeader FixedHeaderTableHeight="400px">
+        <TableHeader>
+            <TableRow>
+                <TableHeaderCell>Id</TableHeaderCell>
+                <TableHeaderCell>Titulo</TableHeaderCell>
+                <TableHeaderCell>Autor</TableHeaderCell>
+                <TableHeaderCell>Precio</TableHeaderCell>
+                <TableHeaderCell>Categoria</TableHeaderCell>
+                <TableHeaderCell>Cantidad</TableHeaderCell>
+                <TableHeaderCell>Fecha Publicacion</TableHeaderCell>
+                <TableHeaderCell>Acciones</TableHeaderCell>
+            </TableRow>
+        </TableHeader>
+        <TableBody>
+            @foreach(var item in libros)
+            {
 
-    <p>Total: <strong>@numResults resultados encontrados</strong></p>
-
+                <TableRow >
+                    <TableRowHeader>@item.IdLibro</TableRowHeader>
+                    <TableRowCell>@item.Titulo</TableRowCell>
+                    <TableRowCell>@item.Autor</TableRowCell>
+                    <TableRowCell>@item.Precio</TableRowCell>
+                    <TableRowCell>@item.Categoria</TableRowCell>
+                    <TableRowCell>@item.Cantidad</TableRowCell>
+                    <TableRowCell>@item.FechaPublicacion</TableRowCell>
+                    <TableRowCell>
+                        <Editar id="@item.IdLibro" OnDatoEditado="OnLibroEditado" />
+                        <Button Color="Color.Secondary" @onclick="() => Detalles(item.IdLibro)">Detalles</Button>
+                        <Button Color="Color.Danger" @onclick="() => Eliminar(item.IdLibro)" >Eliminar</Button>
+                        
+                    </TableRowCell>
+                </TableRow>
+            }
+        </TableBody>
+    </Table>
 
 }
 
 
 @code {
-    GridItemsProvider<LibroViewModel> listaLibros = default!;
-    int numResults;
+
     List<LibroViewModel> libros = new();
     string message = string.Empty;
     bool exito = false;
-    bool modalStatus = false;
 
+    async Task CargarLibros()
+    {
+        libros = await _service.ListaLibros();
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -94,56 +79,24 @@ else
 
     }
 
-    // protected override void OnAfterRender(bool firstRender)
-    // {
-    //     base.OnAfterRender(firstRender);
-    // }
-
-    // async Task CargarLibros()
-    // {
-    //     libros = await _service.ListaLibros();
-    // }
-
-    async Task CargarLibros()
+    protected override async Task OnParametersSetAsync()
     {
-        var response = await _service.ListaLibros();
-        var cantidad = response.Count();
-
-        listaLibros = async req =>
-        {
-            return GridItemsProviderResult.From(
-                items: response,
-                totalItemCount: cantidad
-            );
-        };
-        numResults = cantidad;
-
+        await CargarLibros();
     }
 
+    async Task OnLibroCreado(bool fueExitoso)
+    {
+        exito = fueExitoso;
+        message = exito ? "Libro Registrado con exito" : "No se pudo registrar el libro";
+        await CargarLibros();
+    }
 
-    // private async Task ShowModal()
-    // {
-    //     var agregarModal = Modal.Show<Crear>("Libro Nuevo");
-    //     var result = await agregarModal.Result;
-
-    //     if (result.Cancelled)
-    //     {
-    //         modalStatus = true;
-
-    //         if (modalStatus)
-    //         {
-    //             await CargarLibros();
-    //         }
-
-    //     }
-    //     else if(result.Confirmed){
-    //         Console.WriteLine("Modal cerrado");
-
-    //     }
-
-    // }
-
-
+    async Task OnLibroEditado(bool fueExitoso)
+    {
+        exito = fueExitoso;
+        message = exito ? "Registro editado correctamente" : "No se pudo editar el libro";
+        await CargarLibros();
+    }
 
     async Task Editar(int id)
     {

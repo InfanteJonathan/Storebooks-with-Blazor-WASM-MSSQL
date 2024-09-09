@@ -4,10 +4,12 @@
 @inject LibroService _serviceL
 @inject UsuarioServicio _serviceU
 
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+
 <h3>Detalle Venta</h3>
 
-
-<Toast Message="@messageToast" Show="@showToast" Exito="@exito"></Toast>
+@* 
+<Toast Message="@messageToast" Show="@showToast" Exito="@exito"></Toast> *@
 
 
 <div style="display:flex; justify-content:space-between">

@@ -1,0 +1,18 @@
+﻿<Div Style="display:flex;justify-content:center" >
+    <Carousel @bind-SelectedSlide="@selectedSlide" Interval="2500" Crossfade=true >
+        <CarouselSlide Name="1">
+            <Image Source="Image/libro1.png" Text="Lights image" Display="Display.Block" Height="Height.Rem(35)" Width="Width.Rem(75)" />
+        </CarouselSlide>
+        <CarouselSlide Name="2">
+            <Image Source="Image/libro2.png" Text="Keyboard image" Display="Display.Block" Height="Height.Rem(35)" Width="Width.Rem(75)" />
+        </CarouselSlide>
+        <CarouselSlide Name="3">
+            <Image Source="Image/libro3.png" Text="Road image" Display="Display.Block" Height="Height.Rem(35)" Width="Width.Rem(75)" />
+        </CarouselSlide>
+    </Carousel>
+</Div>
+
+@code {
+    private string selectedSlide = "1";
+    
+}

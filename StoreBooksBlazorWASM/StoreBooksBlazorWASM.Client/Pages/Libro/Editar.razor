@@ -1,92 +1,71 @@
-﻿@page "/editar/{id:int}"
-
+﻿
 @inject HttpClient http
 @inject NavigationManager _navigate
 @inject LibroService _service
 
-<h3>Editar</h3>
+<Button Color="Color.Success" Clicked="@ShowModal">Editar</Button>
 
-<form>
-    <div class="row g-3 align-items-center">
-        <div class="col-auto">
-            <label class="col-form-label">Titulo</label>
-        </div>
-        <div class="col-auto">
-            <input type="text"  @bind=libro.Titulo class="form-control" aria-describedby="passwordHelpInline">
-        </div>
-    </div>
-    <div class="row g-3 align-items-center">
-        <div class="col-auto">
-            <label class="col-form-label">Autor</label>
-        </div>
-        <div class="col-auto">
-            <input type="text"  @bind=libro.Autor class="form-control" aria-describedby="passwordHelpInline">
-        </div>
-    </div>
-    <div class="row g-3 align-items-center">
-        <div class="col-auto">
-            <label class="col-form-label">Precio</label>
-        </div>
-        <div class="col-auto">
-            <input type="number"  @bind=libro.Precio class="form-control" aria-describedby="passwordHelpInline">
-        </div>
-    </div>
-    <div class="row g-3 align-items-center">
-        <div class="col-auto">
-            <label class="col-form-label">Cantidad</label>
-        </div>
-        <div class="col-auto">
-            <input type="number"  @bind=libro.Cantidad class="form-control" aria-describedby="passwordHelpInline">
-        </div>
-    </div>
-    <div class="row g-3 align-items-center">
-        <div class="col-auto">
-            <label class="col-form-label">Categoria</label>
-        </div>
-        <div class="col-auto">
-            <select class="form-select" @bind=libro.Categoria aria-label="Default select example">
-                <option selected>Selecciona</option>
-                @foreach (var item in categorias)
-                {
-                    <option value="@item.NombreCategoria">@item.NombreCategoria</option>
-                }
-            </select>
-        </div>
-    </div>
-    <div class="row g-3 align-items-center">
-        <div class="col-auto">
-            <label class="col-form-label">Fecha de Publicación</label>
-        </div>
-        <div class="col-auto">
-            <input type="date"  @bind=libro.FechaPublicacion class="form-control" aria-describedby="passwordHelpInline">
-        </div>
-    </div>
-    <div class="row g-3 align-items-center">
-        <div class="col-auto">
-            <label class="col-form-label">Imagen URL</label>
-        </div>
-        <div class="col-auto">
-            <input type="text" @bind=libro.Imagen class="form-control" aria-describedby="passwordHelpInline">
-        </div>
-    </div>
-    <div class="row g-3 align-items-center">
-        <div class="col-auto">
-            <label class="col-form-label">Activo</label>
-        </div>
-        <div class="col-auto">
-            <input type="checkbox"  @bind=libro.activo class="checkbox">
-        </div>
-    </div>
-    <div>
-        <button type="button" class="btn btn-primary" @onclick="async () => await EditarLibro()">Registrar</button>
-    </div>
-</form>
+<Modal @ref="modalRef">
+    <ModalContent Centered>
+        <ModalHeader>
+            <ModalTitle>Editar Libro</ModalTitle>
+            <CloseButton />
+        </ModalHeader>
+        <ModalBody>
+            <Field>
+                <FieldLabel>Titulo</FieldLabel>
+                <TextEdit @bind-Text="@libro.Titulo" Placeholder="Ingresar Titulo..." />
+            </Field>
+            <Field>
+                <FieldLabel>Autor</FieldLabel>
+                <TextEdit @bind-Text="@libro.Autor" Placeholder="Ingresar Autor..." />
+            </Field>
+            <Field>
+                <FieldLabel>Categoria</FieldLabel>
+                <Select @bind-SelectedValue="@libro.Categoria">
+                    <SelectItem>Seleccione una categoria...</SelectItem>
+                    @foreach (var item in categorias)
+                    {
+                        <SelectItem Value="@item.NombreCategoria">@item.NombreCategoria</SelectItem>
+                    }
+                </Select>
+            </Field>
+            <Field>
+                <FieldLabel>Precio</FieldLabel>
+                <NumericEdit TValue="decimal" @bind-Value="@libro.Precio" Placeholder="Ingresar precio" />
+            </Field>
+            <Field>
+                <FieldLabel>Cantidad</FieldLabel>
+                <NumericEdit TValue="int" @bind-Value="@libro.Cantidad" Placeholder="Ingresar Cantidad" />
+            </Field>
+            <Field>
+                <FieldLabel>Imagen</FieldLabel>
+                <TextEdit @bind-Text="libro.Imagen" Placeholder="Ingresar Imagen..." />
+            </Field>
+            <Field>
+                <FieldLabel>Fecha de Publicación</FieldLabel>
+                <DateEdit @bind-Date="@libro.FechaPublicacion" TValue="DateTime?" />
+            </Field>
+
+
+        </ModalBody>
+        <ModalFooter>
+            <Button Color="Color.Secondary" Clicked="@HideModal">Cerrar</Button>
+            <Button Color="Color.Primary" Clicked="@EditarLibro">Registrar</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
 
 @code {
     [Parameter]
     public int id { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> OnDatoEditado { get; set; }
+
     List<CategoriaViewModel> categorias = new List<CategoriaViewModel>();
     LibroViewModel libro = new LibroViewModel();
+    private Modal modalRef;
 
 
     protected override async Task OnInitializedAsync()
@@ -109,6 +88,17 @@
     {
 
         var response = await _service.Editar(id, libro);
-        _navigate.NavigateTo("/libros");
+        await OnDatoEditado.InvokeAsync(response.Exito);
+        await HideModal();
+    }
+
+    private Task ShowModal()
+    {
+        return modalRef.Show();
+    }
+
+    private Task HideModal()
+    {
+        return modalRef.Hide();
     }
 }

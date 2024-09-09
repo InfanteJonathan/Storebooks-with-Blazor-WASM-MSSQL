@@ -1,7 +1,8 @@
+using Blazorise;
+using Blazorise.FluentUI2;
+using Blazorise.Icons.FluentUI;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Microsoft.FluentUI.AspNetCore.Components;
-using SoreBooksBlazorWASM.Service;
 using StoreBooksBlazorWASM.Client;
 using StoreBooksBlazorWASM.Client.Services;
 
@@ -15,8 +16,10 @@ builder.Services.AddScoped<LibroService>();
 builder.Services.AddScoped<VentasService>();
 builder.Services.AddScoped<UsuarioServicio>();
 
-builder.Services.AddFluentUIComponents();
-builder.Services.AddDataGridEntityFrameworkAdapter();
+builder.Services
+    .AddBlazorise()
+    .AddFluentUI2Providers()
+    .AddFluentUIIcons();
 
 
 builder.Services.AddAuthorizationCore(options =>

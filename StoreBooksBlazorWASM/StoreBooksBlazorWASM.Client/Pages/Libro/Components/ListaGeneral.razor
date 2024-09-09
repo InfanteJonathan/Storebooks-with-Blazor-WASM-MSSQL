@@ -1,13 +1,13 @@
 ﻿@inject LibroService _service
 @inject VentasService _serviceL
 @inject UsuarioServicio _serviceU
-@rendermode @(new InteractiveWebAssemblyRenderMode(prerender:false))
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 
 
 
 <h1>Últimos Libros Agregados</h1>
 
-<Toast Message="@messageToast" Show="@showToast" Exito="@exito"></Toast>
+<ToastComp Message="@messageToast" Show="@showToast"  Exito="@exito"></ToastComp>
 
 @if (!isDataLoaded)
 {
@@ -41,7 +41,6 @@ else
     private string messageToast = string.Empty;
     private bool showToast = false;
     bool exito = false;
-    List<UserViewModel> usuarios = new();
     bool isDataLoaded = false;
 
     protected override async Task OnInitializedAsync()
@@ -52,7 +51,7 @@ else
 
             libros = await librosTask;
 
-            
+
         }
         catch (Exception ex)
         {
@@ -64,6 +63,11 @@ else
             isDataLoaded = true;
         }
     }
+
+    // protected override Task OnAfterRenderAsync(bool firstRender)
+    // {
+    //     return base.OnAfterRenderAsync(firstRender);
+    // }
 
     async Task CargarLibro()
     {
@@ -104,7 +108,7 @@ else
     {
         showToast = true;
         StateHasChanged(); // Asegura que el estado se actualice
-        await Task.Delay(3000); // Usa Task.Delay en lugar de `Task.Delay().ContinueWith()`
+        await Task.Delay(2000); // Usa Task.Delay en lugar de `Task.Delay().ContinueWith()`
         showToast = false;
         StateHasChanged(); // Asegura que el estado se actualice
     }

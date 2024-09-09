@@ -1,92 +1,76 @@
-﻿
-@inject LibroService _service
+﻿@inject LibroService _service
 
 
-<div>
-    <EditForm Model="@libro" OnValidSubmit="() => Registrar()">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+<Button Color="Color.Primary" Clicked="@ShowModal">Nuevo Libro</Button>
 
-        <div class="row g-3 align-items-center">
-            <div class="col-auto">
-                <label class="col-form-label">Título</label>
-            </div>
-            <div class="col-auto">
-                <InputText id="inputTitulo" @bind-Value="libro.Titulo" class="form-control" />
-            </div>
-        </div>
-        <div class="row g-3 align-items-center">
-            <div class="col-auto">
-                <label class="col-form-label">Autor</label>
-            </div>
-            <div class="col-auto">
-                <InputText id="inputAutor" @bind-Value="libro.Autor" class="form-control" />
-            </div>
-        </div>
-        <div class="row g-3 align-items-center">
-            <div class="col-auto">
-                <label class="col-form-label">Precio</label>
-            </div>
-            <div class="col-auto">
-                <InputNumber id="inputPrecio" @bind-Value="libro.Precio" class="form-control" />
-            </div>
-        </div>
-        <div class="row g-3 align-items-center">
-            <div class="col-auto">
-                <label class="col-form-label">Cantidad</label>
-            </div>
-            <div class="col-auto">
-                <InputNumber id="inputCantidad" @bind-Value="libro.Cantidad" class="form-control" />
-            </div>
-        </div>
-        <div class="row g-3 align-items-center">
-            <div class="col-auto">
-                <label class="col-form-label">Categoría</label>
-            </div>
-            <div class="col-auto">
-                <InputSelect id="inputCategoria" @bind-Value="libro.Categoria" class="form-select">
-                    <option value="">Selecciona</option>
-                    @foreach (var item in categorias)
+<Modal @ref="modalRef">
+    <ModalContent Centered>
+        <ModalHeader>
+            <ModalTitle>Crear Nuevo Libro</ModalTitle>
+            <CloseButton />
+        </ModalHeader>
+        <ModalBody>
+            <Field>
+                <FieldLabel>Titulo</FieldLabel>
+                <TextEdit @bind-Text="@libro.Titulo" Placeholder="Ingresar Titulo..." />
+            </Field>
+            <Field>
+                <FieldLabel>Autor</FieldLabel>
+                <TextEdit @bind-Text="@libro.Autor" Placeholder="Ingresar Autor..." />
+            </Field>
+            <Field>
+                <FieldLabel>Categoria</FieldLabel>
+                <Select @bind-SelectedValue="@libro.Categoria" >
+                    <SelectItem>Seleccione una categoria...</SelectItem>
+                    @foreach(var item in categorias)
                     {
-                        <option value="@item.NombreCategoria">@item.NombreCategoria</option>
+                        <SelectItem Value="@item.NombreCategoria" >@item.NombreCategoria</SelectItem>
                     }
-                </InputSelect>
-            </div>
-        </div>
-        <div class="row g-3 align-items-center">
-            <div class="col-auto">
-                <label class="col-form-label">Fecha de Publicación</label>
-            </div>
-            <div class="col-auto">
-                <InputDate id="inputFechaPublicacion" @bind-Value="libro.FechaPublicacion" class="form-control" aria-describedby="fechaHelpInline" />
-            </div>
-        </div>
-        <div class="row g-3 align-items-center">
-            <div class="col-auto">
-                <label class="col-form-label">Imagen URL</label>
-            </div>
-            <div class="col-auto">
-                <InputText id="inputImagen" @bind-Value="libro.Imagen" class="form-control" aria-describedby="imagenHelpInline" />
-            </div>
-        </div>
-        <div>
-            <button type="submit" class="btn btn-primary">Registrar</button>
-        </div>
-    </EditForm>
-</div>
+                </Select>
+            </Field>
+            <Field>
+                <FieldLabel>Precio</FieldLabel>
+                <NumericEdit TValue="decimal" @bind-Value="@libro.Precio" Placeholder="Ingresar precio"/>
+            </Field>
+            <Field>
+                <FieldLabel>Cantidad</FieldLabel>
+                <NumericEdit TValue="int" @bind-Value="@libro.Cantidad" Placeholder="Ingresar Cantidad" />
+            </Field>
+            <Field>
+                <FieldLabel>Imagen</FieldLabel>
+                <TextEdit @bind-Text="libro.Imagen" Placeholder="Ingresar Imagen..." />
+            </Field>
+            <Field>
+                <FieldLabel>Fecha de Publicación</FieldLabel>
+                <DateEdit @bind-Date="@libro.FechaPublicacion" TValue="DateTime?" />
+            </Field>
+
+
+        </ModalBody>
+        <ModalFooter>
+            <Button Color="Color.Secondary" Clicked="@HideModal">Cerrar</Button>
+            <Button Color="Color.Primary" Clicked="@Registrar">Registrar</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
 
 
 
 
 
 @code {
+
+    [Parameter]
+    public EventCallback<bool> OnDatoCreado { get; set; }
+
     List<CategoriaViewModel> categorias = new List<CategoriaViewModel>();
     LibroViewModel libro = new LibroViewModel();
-    private string message;
     private bool exito;
+    private Modal modalRef;
 
+    
 
-    protected override async Task OnParametersSetAsync()
+    protected override async Task OnInitializedAsync()
     {
         await CargarCategorias();
     }
@@ -97,14 +81,23 @@
 
     }
 
-
     async Task Registrar()
     {
         var response = await _service.Crear(libro);
-        exito = response.Exito;
-        message = response.Mensaje;
-        _navigate.NavigateTo("/libros");
+        await OnDatoCreado.InvokeAsync(response.Exito);
+        await HideModal();    
 
+
+    }
+
+    private Task ShowModal()
+    {
+        return modalRef.Show();
+    }
+
+    private Task HideModal()
+    {
+        return modalRef.Hide();        
     }
 
 

@@ -9,11 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Blazorise.FluentUI2" Version="1.6.1" />
+    <PackageReference Include="Blazorise.Icons.FluentUI" Version="1.6.1" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="8.0.8" />
-    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" Version="4.9.3" />
-    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.DataGrid.EntityFrameworkAdapter" Version="4.9.3" />
-    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="4.9.3" />
     <PackageReference Include="System.Text.Json" Version="8.0.4" />
   </ItemGroup>
 
@@ -24,6 +23,7 @@
 
   <ItemGroup>
     <Folder Include="Pages\Account\" />
+    <Folder Include="Pages\Ventas\Componentes\" />
   </ItemGroup>
 
 </Project>

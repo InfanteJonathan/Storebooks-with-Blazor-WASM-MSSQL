@@ -7,13 +7,14 @@ using StoreBooksBlazorWASM.Data;
 using StoreBooksBlazorWASM.Service;
 using StoreBooksBlazorWASM.Client.Services;
 using SoreBooksBlazorWASM.Service;
-using Microsoft.FluentUI.AspNetCore.Components;
+using Blazorise;
+using Blazorise.FluentUI2;
+using Blazorise.Icons.FluentUI;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -68,8 +69,12 @@ builder.Services.AddAuthorizationBuilder()
 
 builder.Services.AddControllers();
 builder.Services.AddHttpClient();
-builder.Services.AddFluentUIComponents();
-builder.Services.AddDataGridEntityFrameworkAdapter();
+builder.Services
+    .AddBlazorise()
+    .AddFluentUI2Providers()
+    .AddFluentUIIcons();
+
+
 
 
 
@@ -108,7 +113,6 @@ app.UseAuthorization();
 app.UseAntiforgery();
 app.MapControllers();
 app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(StoreBooksBlazorWASM.Client._Imports).Assembly);
 
